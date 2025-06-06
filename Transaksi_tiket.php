@@ -1,6 +1,6 @@
 <?php
 include 'config/config.php';
-
+//perubahan
 $id_event = isset($_GET['id_event']) ? $_GET['id_event'] : 11100;
 
 $query = "SELECT e.*, t.harga_tiket FROM event e

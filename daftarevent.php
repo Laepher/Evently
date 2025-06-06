@@ -1,16 +1,25 @@
 <?php
 include 'config/config.php';
 
+// Debug: Check connection
+if (!$conn) {
+    die("Connection failed: " . mysqli_connect_error());
+}
+
 $query = "
-    SELECT e.id_event, e.nama_event, e.kategori, e.deskripsi_event, e.tanggal_event, t.harga_tiket
+    SELECT e.id_event, e.nama_event, e.kategori, e.deskripsi_event, e.tanggal_event, t.harga_tiket, e.poster_event
     FROM event e
     LEFT JOIN tiket t ON e.id_event = t.id_event
 ";
+
 $result = mysqli_query($conn, $query);
+
+if (!$result) {
+    die("Query failed: " . mysqli_error($conn));
+}
 
 $events = mysqli_fetch_all($result, MYSQLI_ASSOC);
 
-// Fungsi format currency dan tanggal tetap dipertahankan jika diperlukan
 function formatCurrency($amount)
 {
     return 'Rp ' . number_format($amount, 0, ',', '.');
@@ -20,8 +29,6 @@ function formatDate($date)
 {
     return date('d/m/Y', strtotime($date));
 }
-
-// Hapus seluruh bagian search dan filtering di sini
 
 // Handle delete action (jika ada)
 if (isset($_GET['delete']) && !empty($_GET['delete'])) {
@@ -226,6 +233,47 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
             box-shadow: 0 0 0 0.2rem rgba(59, 139, 255, 0.5);
         }
 
+        /* View Poster button styling */
+        .btn-view-poster {
+            background-color: #28a745;
+            border-color: #28a745;
+            color: white;
+            padding: 0.375rem 0.75rem;
+            font-size: 0.875rem;
+            border-radius: 0.375rem;
+            transition: all 0.15s ease-in-out;
+        }
+
+        .btn-view-poster:hover {
+            background-color: #218838;
+            border-color: #1e7e34;
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 2px 4px rgba(40, 167, 69, 0.25);
+        }
+
+        .btn-view-poster:focus {
+            box-shadow: 0 0 0 0.2rem rgba(40, 167, 69, 0.5);
+        }
+
+        /* No poster available styling */
+        .no-poster {
+            color: #6c757d;
+            font-style: italic;
+            font-size: 0.875rem;
+        }
+
+        /* Poster modal styling */
+        .poster-modal .modal-dialog {
+            max-width: 800px;
+        }
+
+        .poster-image {
+            max-width: 100%;
+            height: auto;
+            border-radius: 0.5rem;
+        }
+
         /* Header controls responsive spacing */
         .header-controls {
             gap: 1rem;
@@ -297,7 +345,8 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                         <?php if (empty($events)): ?>
                             <div class="text-center py-5">
                                 <i class="fas fa-calendar-alt fa-3x text-muted mb-3"></i>
-                                <h5 class="text-muted">No events found</h5>
+                                <h5 class="text-muted">Belum ada event</h5>
+                                <p class="text-muted">Klik tombol "TAMBAHKAN" untuk menambah event baru</p>
                             </div>
                         <?php else: ?>
                             <div class="table-responsive">
@@ -310,6 +359,7 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                                             <th scope="col">DESKRIPSI</th>
                                             <th scope="col" class="text-center">TANGGAL</th>
                                             <th scope="col" class="text-end">HARGA</th>
+                                            <th scope="col" class="text-center">POSTER</th>
                                             <th scope="col" class="text-center">AKSI</th>
                                         </tr>
                                     </thead>
@@ -322,6 +372,16 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                                                 <td><?= htmlspecialchars($event['deskripsi_event']) ?></td>
                                                 <td class="text-center"><?= formatDate($event['tanggal_event']) ?></td>
                                                 <td class="text-end"><?= formatCurrency($event['harga_tiket']) ?></td>
+                                                <td class="text-center">
+                                                    <?php if (!empty($event['poster_event'])): ?>
+                                                        <button class="btn btn-view-poster btn-sm" onclick="viewPoster('<?= htmlspecialchars($event['id_event']) ?>', '<?= htmlspecialchars($event['nama_event']) ?>')">
+                                                            <i class="fas fa-image me-1"></i>
+                                                            Lihat
+                                                        </button>
+                                                    <?php else: ?>
+                                                        <span class="no-poster">Tidak ada poster</span>
+                                                    <?php endif; ?>
+                                                </td>
                                                 <td class="text-center">
                                                     <button class="btn btn-danger btn-delete" onclick="confirmDelete('<?= htmlspecialchars($event['id_event']) ?>', '<?= htmlspecialchars($event['nama_event']) ?>')">Delete</button>
                                                 </td>
@@ -336,9 +396,9 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
             </div>
 
             <!-- Pagination Info -->
-            <?php if (!empty($filteredEvents)): ?>
+            <?php if (!empty($events)): ?>
                 <div class="mt-3 text-muted">
-                    <small>Showing <?php echo count($filteredEvents); ?> of <?php echo count($events); ?> events</small>
+                    <small>Menampilkan <?php echo count($events); ?> event</small>
                 </div>
             <?php endif; ?>
         </div>
@@ -374,6 +434,33 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
         </div>
     </div>
 
+    <!-- Poster View Modal -->
+    <div class="modal fade poster-modal" id="posterModal" tabindex="-1" aria-labelledby="posterModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="posterModalLabel">
+                        <i class="fas fa-image text-primary me-2"></i>
+                        Poster Event: <span id="posterEventName"></span>
+                    </h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center p-4">
+                    <div id="posterContainer">
+                        <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                            <div class="spinner-border text-primary" role="status">
+                                <span class="visually-hidden">Loading...</span>
+                            </div>
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Tutup</button>
+                </div>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -387,9 +474,72 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
             modal.show();
         }
 
-        // Add new event function
         function addNewEvent() {
             window.location.href = 'inputevent.php';
+        }
+
+        // View poster function
+        function viewPoster(eventId, eventName) {
+            document.getElementById('posterEventName').textContent = eventName;
+            
+            // Reset container with loading spinner
+            document.getElementById('posterContainer').innerHTML = `
+                <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
+                    <div class="spinner-border text-primary" role="status">
+                        <span class="visually-hidden">Loading...</span>
+                    </div>
+                </div>
+            `;
+
+            // Show modal
+            const modal = new bootstrap.Modal(document.getElementById('posterModal'));
+            modal.show();
+
+            // Create image element to load poster
+            const img = new Image();
+            img.onload = function() {
+                document.getElementById('posterContainer').innerHTML = `
+                    <img src="data:image/jpeg;base64,${this.src}" class="poster-image" alt="Poster ${eventName}">
+                `;
+            };
+            img.onerror = function() {
+                document.getElementById('posterContainer').innerHTML = `
+                    <div class="text-center py-4">
+                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                        <h6 class="text-muted">Gagal memuat poster</h6>
+                        <p class="text-muted small">Poster mungkin rusak atau tidak tersedia</p>
+                    </div>
+                `;
+            };
+
+            // Fetch poster data
+            fetch(`get_poster.php?id=${eventId}`)
+                .then(response => response.text())
+                .then(base64Data => {
+                    if (base64Data && base64Data !== 'error') {
+                        document.getElementById('posterContainer').innerHTML = `
+                            <img src="data:image/jpeg;base64,${base64Data}" class="poster-image" alt="Poster ${eventName}">
+                        `;
+                    } else {
+                        document.getElementById('posterContainer').innerHTML = `
+                            <div class="text-center py-4">
+                                <i class="fas fa-image fa-3x text-muted mb-3"></i>
+                                <h6 class="text-muted">Poster tidak tersedia</h6>
+                                <p class="text-muted small">Poster untuk event ini tidak ditemukan</p>
+                            </div>
+                        `;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    document.getElementById('posterContainer').innerHTML = `
+                        <div class="text-center py-4">
+                            <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
+                            <h6 class="text-muted">Gagal memuat poster</h6>
+                            <p class="text-muted small">Terjadi kesalahan saat memuat poster</p>
+                        </div>
+                    `;
+                });
         }
     </script>
 </body>

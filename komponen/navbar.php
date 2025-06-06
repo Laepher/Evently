@@ -32,8 +32,16 @@ mysqli_stmt_close($stmt);
     <div id="userSidebar" class="sidebar hidden">
         <img src="./assets/achil.jpg" alt="Foto Profil" class="user-avatar">
         <div class="user-name">Hai, <?= htmlspecialchars($nama_user) ?>!</div>
-        <button class="logout-btn" onclick="logout()">Logout</button>
+     <!-- Menu Sidebar -->
+    <div class="sidebar-menu">
+        <a href="riwayat_pembelian.php" class="sidebar-link">
+            <i class="fas fa-history"></i> Riwayat Pembelian
+        </a>
     </div>
+    
+    <button class="logout-btn" onclick="logout()">
+        <i class="fas fa-sign-out-alt"></i> Logout
+    </button>
 </nav>
 
 <script>

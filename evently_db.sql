@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 02, 2025 at 11:35 AM
+-- Generation Time: Jun 07, 2025 at 12:15 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -40,6 +40,18 @@ CREATE TABLE `admin` (
 
 INSERT INTO `admin` (`id_admin`, `nama_admin`, `email_admin`, `password_admin`) VALUES
 (1, 'ael', 'ael@123.com', '$2y$10$76nN.JuEWAL7kcC6G8ewOOvEJoPkHQ2d8txW9D.5ZpywTlSLjHTgi');
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `banners`
+--
+
+CREATE TABLE `banners` (
+  `banner_id` int(11) NOT NULL,
+  `banner_image` longblob NOT NULL,
+  `description` varchar(255) DEFAULT NULL
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
 -- --------------------------------------------------------
 
@@ -92,6 +104,7 @@ CREATE TABLE `pesanan` (
   `id_pesanan` int(10) NOT NULL,
   `id_user` int(10) NOT NULL,
   `id_tiket` int(10) NOT NULL,
+  `tanggal_pesanan` date NOT NULL,
   `status_pesanan` enum('terbayar','menunggu','dibatalkan') NOT NULL,
   `total_harga` int(11) NOT NULL,
   `banyak_tiket` int(3) NOT NULL,
@@ -102,8 +115,8 @@ CREATE TABLE `pesanan` (
 -- Dumping data for table `pesanan`
 --
 
-INSERT INTO `pesanan` (`id_pesanan`, `id_user`, `id_tiket`, `status_pesanan`, `total_harga`, `banyak_tiket`, `metode_bayar`) VALUES
-(1130001, 1100001, 1120000, 'menunggu', 220000, 2, 'Bank Transfer');
+INSERT INTO `pesanan` (`id_pesanan`, `id_user`, `id_tiket`, `tanggal_pesanan`, `status_pesanan`, `total_harga`, `banyak_tiket`, `metode_bayar`) VALUES
+(1130001, 1100001, 1120000, '0000-00-00', 'menunggu', 220000, 2, 'Bank Transfer');
 
 -- --------------------------------------------------------
 
@@ -163,6 +176,12 @@ INSERT INTO `user` (`id_user`, `nama_user`, `email_user`, `password_user`, `stat
 --
 ALTER TABLE `admin`
   ADD PRIMARY KEY (`id_admin`);
+
+--
+-- Indexes for table `banners`
+--
+ALTER TABLE `banners`
+  ADD PRIMARY KEY (`banner_id`);
 
 --
 -- Indexes for table `event`

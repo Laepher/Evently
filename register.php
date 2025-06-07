@@ -1,7 +1,13 @@
 <?php
-require 'Config/config.php';
+require 'config/config.php';
 session_start();
 
+// Debugging connection
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
+}
+
+// Proses registrasi
 if ($_SERVER["REQUEST_METHOD"] == "POST") {
     $nama = $_POST["fullname"];
     $email = $_POST["email"];
@@ -48,13 +54,10 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
   <title>Evently Register</title>
   <link rel="stylesheet" href="style/Register.css" />
 </head>
-
 <body>
-
   <header>
     <a href="homepage.php" style="text-decoration: none; color: blue;">EVENTLY</a>
   </header>
-
   <main>
     <div class="container">
       <div class="left">
@@ -66,28 +69,21 @@ if ($_SERVER["REQUEST_METHOD"] == "POST") {
       <div class="right">
         <form method="POST" action="register.php">
           <h2>Create Your Account</h2>
-          
           <label for="fullname">Full Name</label>
           <input type="text" id="fullname" name="fullname" placeholder="Enter your full name" required />
-
           <label for="email">Email</label>
           <input type="email" id="email" name="email" placeholder="johndoe@email.com" required />
-
           <label for="password">Password</label>
           <input type="password" id="password" name="password" placeholder="Enter your Password" required />
-
           <label for="confirm_password">Confirm Password</label>
           <input type="password" id="confirm_password" name="confirm_password" placeholder="Confirm your Password" required />
-
           <button type="submit">Register</button>
-
           <h3>Already got an account?</h3> 
           <a href="login.php" class="login-button">Login</a>
         </form>
       </div>
     </div>
   </main>
-
   <footer>
     © 2024 Evently. All rights reserved.
   </footer>

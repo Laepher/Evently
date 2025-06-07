@@ -1,13 +1,19 @@
 <?php
-require 'Config/config.php';
+require 'config/config.php';
 session_start();
 
+// Debugging connection
+if ($conn->connect_error) {
+    die("Koneksi gagal: " . $conn->connect_error);
+}
+
+// Proses login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $error = null;
 
-    // Coba cari sebagai admin dulu
+    // Coba cari sebagai admin
     $sql_admin = "SELECT id_admin, password_admin FROM admin WHERE email_admin = ?";
     $stmt = mysqli_prepare($conn, $sql_admin);
     mysqli_stmt_bind_param($stmt, "s", $email);
@@ -56,45 +62,35 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
 }
 ?>
 
-
 <!DOCTYPE html>
 <html lang="en">
-
 <head>
   <meta charset="UTF-8" />
   <meta name="viewport" content="width=device-width, initial-scale=1.0" />
   <title>Halaman Login</title>
   <link rel="stylesheet" href="style/login.css" />
 </head>
-
 <body>
-
   <header>
     <a href="homepage.php" style="text-decoration: none; color: blue; font-size: 25px">EVENTLY</a>
   </header>
-
   <main>
     <div class="login-box">
       <h2>LOGIN PAGE</h2>
-
       <?php if (isset($error)) echo "<p style='color:red;'>$error</p>"; ?>
-
       <form method="POST">
         <input type="email" name="email" placeholder="Email" required />
         <input type="password" name="password" placeholder="Password" required />
         <button type="submit">SIGN IN</button>
       </form>
-
       <a href="#">Forgot Password?</a>
       <br />
-      <a href="Register.php">Sign Up</a>
+      <a href="register.php">Sign Up</a>
     </div>
   </main>
-
   <footer>
     <span>© 2025 EVENTLY. All Rights Reserved.</span>
     <a href="#">Contact Admin</a>
   </footer>
-
 </body>
 </html>

@@ -77,7 +77,6 @@ $hargaTiket = (int)$event['harga_tiket'];
                     </div>
                 </div>
 
-                <a href="Hasil_pembayaran.php" id="pay-link" style="display: none;"></a>
                 <button class="pay-button" id="pay-button">BAYAR</button>
             </div>
         </div>
@@ -104,6 +103,9 @@ $hargaTiket = (int)$event['harga_tiket'];
         quantity: 0
     }];
 
+    // Variable to store selected payment method
+    let selectedPaymentMethod = '';
+
     const elements = {
         quantityInputs: {
             regular: document.getElementById('regular-qty')
@@ -114,7 +116,6 @@ $hargaTiket = (int)$event['harga_tiket'];
         paymentOptions: document.getElementById('payment-options'),
         selectedPayment: document.getElementById('selected-payment'),
         payButton: document.getElementById('pay-button'),
-        payLink: document.getElementById('pay-link'),
         confirmModal: document.getElementById('confirmModal')
     };
 
@@ -159,6 +160,7 @@ $hargaTiket = (int)$event['harga_tiket'];
         document.querySelectorAll('.dropdown-option').forEach(option => {
             option.addEventListener('click', () => {
                 elements.selectedPayment.textContent = option.textContent;
+                selectedPaymentMethod = option.getAttribute('data-value'); // Store selected payment method
                 elements.paymentOptions.style.display = 'none';
             });
         });
@@ -211,11 +213,27 @@ $hargaTiket = (int)$event['harga_tiket'];
     }
 
     function confirmBayar() {
-        window.location.href = "Hasil_pembayaran.php";
+        // Determine which payment result page to redirect to based on selected payment method
+        let redirectUrl = '';
+        
+        switch(selectedPaymentMethod) {
+            case 'e-money':
+                redirectUrl = 'Hasil_pembayaran.php';
+                break;
+            case 'e-banking':
+            case 'transfer':
+                redirectUrl = 'Hasil_pembayaran2.php';
+                break;
+            default:
+                alert('Metode pembayaran tidak valid');
+                return;
+        }
+        
+        window.location.href = redirectUrl;
     }
 
     function goBack() {
-        window.location.href = "Deskripsi_tiket.php";
+        elements.confirmModal.style.display = 'none';
     }
 
     window.onclick = function (event) {

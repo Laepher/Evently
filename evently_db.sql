@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2025 at 06:14 PM
+-- Generation Time: Jun 07, 2025 at 06:45 PM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -98,7 +98,6 @@ INSERT INTO `event` (`id_event`, `nama_event`, `kategori`, `deskripsi_event`, `p
 CREATE TABLE `pembayaran` (
   `id_pembayaran` int(10) NOT NULL,
   `id_pesanan` int(10) NOT NULL,
-  `tanggal_bayar` date NOT NULL,
   `bukti_bayar` longblob NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 

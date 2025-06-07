@@ -12,7 +12,6 @@ $query = "SELECT
     p.id_pesanan,
     p.id_tiket,
     p.id_user,
-    p.tanggal_bayar,
     p.metode_bayar,
     p.banyak_tiket,
     p.total_harga,
@@ -128,10 +127,6 @@ function getPaymentMethodName($method) {
                                 <p><i class="fas fa-tag"></i> Kategori: <?= htmlspecialchars($order['kategori']) ?></p>
                                 <div class="date-info">
                                     <p class="order-date"><i class="fas fa-clock"></i> Dipesan: <?= formatDate($order['tanggal_pesanan']) ?></p>
-                                    <p class="payment-date">
-                                        <i class="fas fa-credit-card"></i> 
-                                        Dibayar: <?= formatDate($order['tanggal_bayar']) ?>
-                                    </p>
                                 </div>
                             </div>
                             <div class="ticket-info">

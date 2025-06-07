@@ -10,7 +10,8 @@ function formatCurrency($amount)
 }
 
 // Function to format date
-function formatDate($date) {
+function formatDate($date)
+{
     if (empty($date) || $date == '0000-00-00 00:00:00') {
         return '-';
     }
@@ -90,8 +91,7 @@ function formatDate($date) {
                                         <th scope="col" class="text-center" style="width: 80px;">BANYAK TIKET</th>
                                         <th scope="col" class="text-center">TOTAL HARGA</th>
                                         <th scope="col" class="text-center">STATUS</th>
-                                        <th scope="col" class="text-center">TGL PESANAN</th>
-                                        <th scope="col" class="text-center">TGL BAYAR</th>
+                                        <th scope="col" class="text-center">TANGGAL PESANAN</th>
                                     </tr>
                                 </thead>
                                 <tbody>
@@ -108,11 +108,11 @@ function formatDate($date) {
                                             echo "<td class='text-center'>" . htmlspecialchars($row['metode_bayar']) . "</td>";
                                             echo "<td class='text-center'>" . htmlspecialchars($row['banyak_tiket']) . "</td>";
                                             echo "<td class='text-center'>Rp " . number_format($row['total_harga'], 0, ',', '.') . "</td>";
-                                            
+
                                             // Status with color coding
                                             $status = strtolower($row['status_pesanan']);
                                             $statusClass = '';
-                                            switch($status) {
+                                            switch ($status) {
                                                 case 'confirmed':
                                                 case 'dikonfirmasi':
                                                     $statusClass = 'text-success fw-bold';
@@ -129,9 +129,8 @@ function formatDate($date) {
                                                     $statusClass = 'text-secondary';
                                             }
                                             echo "<td class='text-center'><span class='" . $statusClass . "'>" . strtoupper($row['status_pesanan']) . "</span></td>";
-                                            
+
                                             echo "<td class='text-center'>" . formatDate($row['tanggal_pesanan']) . "</td>";
-                                            echo "<td class='text-center'>" . formatDate($row['tanggal_bayar']) . "</td>";
                                             echo "</tr>";
                                         }
                                     } else {

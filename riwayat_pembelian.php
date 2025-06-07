@@ -12,6 +12,7 @@ $query = "SELECT
     p.id_pesanan,
     p.id_tiket,
     p.id_user,
+    p.tanggal_bayar,
     p.metode_bayar,
     p.banyak_tiket,
     p.total_harga,
@@ -46,6 +47,9 @@ function formatCurrency($amount) {
 
 // Function to format date
 function formatDate($date) {
+    if (empty($date) || $date == '0000-00-00 00:00:00') {
+        return '-';
+    }
     return date('d M Y H:i', strtotime($date));
 }
 
@@ -105,7 +109,7 @@ function getPaymentMethodName($method) {
             <?php if (empty($orders)): ?>
                 <div class="empty-state">
                     <h3>Tidak ada pembelian</h3>
-                    <p>Anda belum memiliki riwayat pembalian. Mulai jelajahi event menarik!</p>
+                    <p>Anda belum memiliki riwayat pembelian. Mulai jelajahi event menarik!</p>
                     <a href="homepage.php" class="btn-primary">Jelajahi Event</a>
                 </div>
             <?php else: ?>
@@ -122,7 +126,13 @@ function getPaymentMethodName($method) {
                                 <h3><?= htmlspecialchars($order['nama_event']) ?></h3>
                                 <p><i class="fas fa-calendar"></i> Event: <?= formatDate($order['tanggal_event']) ?></p>
                                 <p><i class="fas fa-tag"></i> Kategori: <?= htmlspecialchars($order['kategori']) ?></p>
-                                <p class="order-date"><i class="fas fa-clock"></i> Dipesan: <?= formatDate($order['tanggal_pesanan']) ?></p>
+                                <div class="date-info">
+                                    <p class="order-date"><i class="fas fa-clock"></i> Dipesan: <?= formatDate($order['tanggal_pesanan']) ?></p>
+                                    <p class="payment-date">
+                                        <i class="fas fa-credit-card"></i> 
+                                        Dibayar: <?= formatDate($order['tanggal_bayar']) ?>
+                                    </p>
+                                </div>
                             </div>
                             <div class="ticket-info">
                                 <h4>Detail Tiket:</h4>

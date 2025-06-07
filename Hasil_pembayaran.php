@@ -9,16 +9,7 @@
 </head>
 
 <body>
-    <!-- Navbar -->
-    <nav class="navbar">
-        <a href="#" class="logo">EVENTLY</a>
-        <div class="search-bar">
-            <input type="text" placeholder="Cari event...">
-        </div>
-        <div class="nav-links">
-            <a href="#" class="home-link">BERANDA</a>
-        </div>
-    </nav>
+   <?php include 'komponen/navbar.php'; ?>
 
     <main>
         <div class="container">

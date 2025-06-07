@@ -17,9 +17,8 @@ if (mysqli_stmt_fetch($stmt)) {
 mysqli_stmt_close($stmt);
 ?>
 
-
 <nav class="navbar">
-    <button class="burger" onclick="toggleSidebar()">☰</button>
+    <button class="burger">☰</button>
     <a href="homepage.php" class="logo">EVENTLY</a>
     <div class="search-bar">
         <input type="text" placeholder="Search...">
@@ -28,25 +27,78 @@ mysqli_stmt_close($stmt);
         <a href="homepage.php" class="home-link">BERANDA</a>
     </div>
 </nav>
+
 <nav>
     <div id="userSidebar" class="sidebar hidden">
         <img src="./assets/achil.jpg" alt="Foto Profil" class="user-avatar">
         <div class="user-name">Hai, <?= htmlspecialchars($nama_user) ?>!</div>
-     <!-- Menu Sidebar -->
-    <div class="sidebar-menu">
-        <a href="riwayat_pembelian.php" class="sidebar-link">
-            <i class="fas fa-history"></i> Riwayat Pembelian
-        </a>
+        <!-- Menu Sidebar -->
+        <div class="sidebar-menu">
+            <a href="riwayat_pembelian.php" class="sidebar-link">
+                <i class="fas fa-history"></i> Riwayat Pembelian
+            </a>
+        </div>
+        
+        <button class="logout-btn">
+            <i class="fas fa-sign-out-alt"></i> Logout
+        </button>
     </div>
-    
-    <button class="logout-btn" onclick="logout()">
-        <i class="fas fa-sign-out-alt"></i> Logout
-    </button>
 </nav>
 
 <script>
-    
-    function logout() {
-        window.location.href = 'login.php';
-    }
+    // Initialize sidebar functionality when DOM is loaded
+    document.addEventListener('DOMContentLoaded', function() {
+        const burgerBtn = document.querySelector('.burger');
+        const sidebar = document.getElementById('userSidebar');
+        const logoutBtn = document.querySelector('.logout-btn');
+        
+        // === Sidebar Toggle Function ===
+        function toggleSidebar() {
+            sidebar.classList.toggle('hidden');
+            
+            if (!sidebar.classList.contains('hidden')) {
+                // Add click outside listener when sidebar is open
+                setTimeout(() => {
+                    document.addEventListener('click', handleClickOutside);
+                }, 0);
+            } else {
+                // Remove click outside listener when sidebar is closed
+                document.removeEventListener('click', handleClickOutside);
+            }
+        }
+        
+        // === Handle Click Outside Sidebar ===
+        function handleClickOutside(event) {
+            if (sidebar && !sidebar.contains(event.target) && !burgerBtn.contains(event.target)) {
+                sidebar.classList.add('hidden');
+                document.removeEventListener('click', handleClickOutside);
+            }
+        }
+        
+        // === Logout Function ===
+        function logout() {
+            if (confirm("Apakah Anda yakin ingin logout?")) {
+                window.location.href = 'login.php';
+            }
+        }
+        
+        // === Event Listeners ===
+        // Burger button click
+        burgerBtn?.addEventListener('click', function(e) {
+            e.stopPropagation();
+            toggleSidebar();
+        });
+        
+        // Logout button click
+        logoutBtn?.addEventListener('click', function(e) {
+            e.preventDefault();
+            e.stopPropagation();
+            logout();
+        });
+        
+        // Prevent sidebar from closing when clicking inside it
+        sidebar?.addEventListener('click', function(e) {
+            e.stopPropagation();
+        });
+    });
 </script>

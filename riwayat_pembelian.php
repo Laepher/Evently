@@ -89,13 +89,13 @@ function getPaymentMethodName($method) {
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <link rel="stylesheet" href="style/main.css"/>
     <link rel="stylesheet" href="style/riwayat_pembelian.css"/>
-    <title>Riwayat Pesanan - EVENTLY</title>
+    <title>Riwayat Pembelian - EVENTLY</title>
 </head>
 <body>
     <?php include 'komponen/navbar.php'; ?>
     
     <div class="container">
-        <div class="header-title">Riwayat Pesanan</div>
+        <div class="header-title">Riwayat Pembelian</div>
         
         <button class="refresh-btn" onclick="location.reload()">
             <i class="fas fa-sync-alt"></i> Refresh
@@ -104,8 +104,8 @@ function getPaymentMethodName($method) {
         <div class="orders-container" id="ordersContainer">
             <?php if (empty($orders)): ?>
                 <div class="empty-state">
-                    <h3>Belum Ada Pesanan</h3>
-                    <p>Anda belum memiliki riwayat pesanan. Mulai jelajahi event menarik!</p>
+                    <h3>Tidak ada pembelian</h3>
+                    <p>Anda belum memiliki riwayat pembalian. Mulai jelajahi event menarik!</p>
                     <a href="homepage.php" class="btn-primary">Jelajahi Event</a>
                 </div>
             <?php else: ?>

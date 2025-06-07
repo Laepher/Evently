@@ -291,6 +291,214 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                 max-width: none !important;
             }
         }
+
+        /* Banner Modal styling */
+        .modal-overlay {
+            position: fixed;
+            top: 0;
+            left: 0;
+            width: 100%;
+            height: 100%;
+            background-color: rgba(0, 0, 0, 0.7);
+            z-index: 1050;
+            display: none;
+            justify-content: center;
+            align-items: center;
+        }
+
+        .modal-overlay.show {
+            display: flex;
+        }
+
+        .custom-modal {
+            background: rgba(0, 0, 0, 0.8);
+            border-radius: 1rem;
+            width: 500px;
+            max-width: 90vw;
+            position: relative;
+            overflow: hidden;
+            box-shadow: 0 20px 40px rgba(0, 0, 0, 0.3);
+        }
+
+        .custom-modal-header {
+            position: relative;
+            padding: 0;
+        }
+
+        .close-btn {
+            position: absolute;
+            top: 15px;
+            right: 15px;
+            width: 30px;
+            height: 30px;
+            background: none;
+            border: none;
+            color: white;
+            font-size: 24px;
+            cursor: pointer;
+            font-weight: bold;
+            z-index: 10;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            border-radius: 50%;
+            transition: all 0.3s ease;
+        }
+
+        .close-btn:hover {
+            background-color: rgba(255, 255, 255, 0.2);
+        }
+
+        .tabs {
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 1rem 1rem 0 0;
+            user-select: none;
+            display: flex;
+        }
+
+        .tab {
+            flex: 1;
+            text-align: center;
+            padding: 1rem;
+            color: rgba(255, 255, 255, 0.7);
+            cursor: pointer;
+            border-bottom: 3px solid transparent;
+            transition: all 0.3s ease;
+        }
+
+        .tab.active {
+            color: white;
+            border-bottom-color: white;
+        }
+
+        .tab:hover {
+            background-color: rgba(255, 255, 255, 0.1);
+        }
+
+        .custom-modal-content {
+            padding: 2rem;
+            color: white;
+        }
+
+        .upload-area {
+            border: 2px dashed rgba(255, 255, 255, 0.5);
+            border-radius: 12px;
+            padding: 40px 20px;
+            text-align: center;
+            margin-bottom: 25px;
+            background: rgba(255, 255, 255, 0.1);
+            cursor: pointer;
+            transition: all 0.3s ease;
+        }
+
+        .upload-area:hover {
+            border-color: rgba(255, 255, 255, 0.8);
+            background: rgba(255, 255, 255, 0.15);
+        }
+
+        .upload-icon {
+            font-size: 48px;
+            margin-bottom: 15px;
+            opacity: 0.8;
+        }
+
+        .upload-text {
+            font-size: 16px;
+            margin-bottom: 15px;
+            font-weight: 500;
+        }
+
+        .pengingat {
+            font-size: 12px;
+            margin-bottom: 15px;
+            color: rgb(246, 41, 41);
+        }
+
+        .choose-file-btn {
+            color: #29b6f6;
+            border-radius: 25px;
+            font-weight: 600;
+            background: white;
+            border: none;
+            padding: 0.5rem 1.5rem;
+        }
+
+        .file-input {
+            display: none;
+        }
+
+        .file-preview {
+            margin-top: 15px;
+            padding: 10px;
+            background: rgba(255, 255, 255, 0.1);
+            border-radius: 8px;
+            display: none;
+        }
+
+        .file-info {
+            font-size: 14px;
+            opacity: 0.9;
+        }
+
+        .form-input {
+            background-color: rgba(255, 255, 255, 0.1) !important;
+            border: 1px solid rgba(255, 255, 255, 0.3) !important;
+            color: white !important;
+        }
+
+        .form-input::placeholder {
+            color: rgba(255, 255, 255, 0.7) !important;
+        }
+
+        .form-input:focus {
+            background-color: rgba(255, 255, 255, 0.15) !important;
+            border-color: rgba(255, 255, 255, 0.5) !important;
+            box-shadow: 0 0 0 0.2rem rgba(255, 255, 255, 0.25) !important;
+        }
+
+        .apply-btn {
+            background-color: #4caf50 !important;
+            border-color: #4caf50 !important;
+            color: white !important;
+            text-transform: uppercase;
+            letter-spacing: 1px;
+            font-weight: 600;
+            padding: 0.75rem;
+            border-radius: 0.5rem;
+            transition: all 0.3s ease;
+        }
+
+        .apply-btn:hover {
+            background-color: #45a049 !important;
+            border-color: #45a049 !important;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(76, 175, 80, 0.3);
+        }
+
+        /* Atur Banner button styling */
+        .btn-banner {
+            background: linear-gradient(135deg, rgba(0, 140, 255, 0.46) 0%, rgb(0, 153, 255) 100%);
+            border: none;
+            color: white;
+            font-weight: 600;
+            padding: 0.625rem 1.25rem;
+            border-radius: 0.375rem;
+            transition: all 0.15s ease-in-out;
+            text-transform: uppercase;
+            letter-spacing: 0.5px;
+            font-size: 0.875rem;
+        }
+
+        .btn-banner:hover {
+            background: linear-gradient(135deg, rgba(0, 120, 255, 0.6) 0%, rgb(0, 130, 255) 100%);
+            color: white;
+            transform: translateY(-1px);
+            box-shadow: 0 4px 8px rgba(0, 153, 255, 0.25);
+        }
+
+        .btn-banner:focus {
+            box-shadow: 0 0 0 0.2rem rgba(0, 153, 255, 0.5);
+        }
     </style>
 </head>
 
@@ -314,16 +522,16 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
             <div class="col-md-2 col-lg-2 sidebar bg-white p-4">
                 <h5 class="fw-bold text-primary-custom mb-4">KELOLA</h5>
                 <nav class="nav flex-column">
-                    <a href="daftarevent.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="daftarevent.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         DAFTAR EVENT
                     </a>
-                    <a href="daftaruser.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="daftaruser.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         DAFTAR USER
                     </a>
-                    <a href="pemesanantiket.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="pemesanantiket.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         PEMESANAN TIKET
                     </a>
-                    <a href="pembayaran.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="pembayaran.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         PEMBAYARAN USER
                     </a>
                 </nav>
@@ -334,10 +542,16 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                 <div class="d-flex justify-content-between align-items-center mb-4 header-controls">
                     <h2 class="text-primary-custom fw-bold">DAFTAR EVENT</h2>
 
-                    <button class="btn btn-add" onclick="addNewEvent()">
-                        <i class="fas fa-plus me-2"></i>
-                        TAMBAHKAN
-                    </button>
+                    <div class="d-flex" style="gap: 1rem;">
+                        <button class="btn btn-add" onclick="addNewEvent()">
+                            <i class="fas fa-plus me-2"></i>
+                            TAMBAHKAN
+                        </button>
+
+                        <button class="btn btn-banner" onclick="openModal()">
+                            Atur Banner
+                        </button>
+                    </div>
                 </div>
 
                 <div class="card shadow-sm">
@@ -393,16 +607,15 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                         <?php endif; ?>
                     </div>
                 </div>
-            </div>
 
-            <!-- Pagination Info -->
-            <?php if (!empty($events)): ?>
-                <div class="mt-3 text-muted">
-                    <small>Menampilkan <?php echo count($events); ?> event</small>
-                </div>
-            <?php endif; ?>
+                <!-- Pagination Info -->
+                <?php if (!empty($events)): ?>
+                    <div class="mt-3 text-muted">
+                        <small>Menampilkan <?php echo count($events); ?> event</small>
+                    </div>
+                <?php endif; ?>
+            </div>
         </div>
-    </div>
     </div>
 
     <!-- Delete Confirmation Modal -->
@@ -461,6 +674,43 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
         </div>
     </div>
 
+    <!-- Atur Banner Modal -->
+    <div class="modal-overlay" id="modalOverlay">
+        <div class="custom-modal">
+            <div class="custom-modal-header">
+                <button class="close-btn" onclick="closeModal()">&times;</button>
+                <div class="tabs">
+                    <div class="tab active" data-tab="1">Banner 1</div>
+                    <div class="tab" data-tab="2">Banner 2</div>
+                    <div class="tab" data-tab="3">Banner 3</div>
+                </div>
+            </div>
+
+            <div class="custom-modal-content">
+                <div class="upload-area" onclick="document.getElementById('fileInput').click()">
+                    <div class="upload-icon">📷</div>
+                    <div class="upload-text">Seret atau pilih file</div>
+                    <button type="button" class="choose-file-btn">Pilih File</button>
+                    <input type="file" id="fileInput" class="file-input" accept="image/*" onchange="handleFileSelect(event)">
+                    <div class="file-preview" id="filePreview">
+                        <div class="file-info" id="fileInfo"></div>
+                    </div>
+                </div>
+
+                <div class="form-group mb-4">
+                    <label class="form-label fw-semibold" for="description">Masukkan Deskripsi Singkat:</label>
+                    <textarea class="form-control form-input" id="description" placeholder="Tulis deskripsi banner di sini..." rows="3" style="resize: vertical; min-height: 80px;"></textarea>
+                </div>
+
+                <div class="pengingat">
+                    Gunakan resolusi 16:9 agar tampilan tidak hancur!
+                </div>
+
+                <button class="btn apply-btn w-100" onclick="applyBanner()">Apply</button>
+            </div>
+        </div>
+    </div>
+
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
@@ -481,7 +731,7 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
         // View poster function
         function viewPoster(eventId, eventName) {
             document.getElementById('posterEventName').textContent = eventName;
-            
+
             // Reset container with loading spinner
             document.getElementById('posterContainer').innerHTML = `
                 <div class="d-flex justify-content-center align-items-center" style="min-height: 200px;">
@@ -494,23 +744,6 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
             // Show modal
             const modal = new bootstrap.Modal(document.getElementById('posterModal'));
             modal.show();
-
-            // Create image element to load poster
-            const img = new Image();
-            img.onload = function() {
-                document.getElementById('posterContainer').innerHTML = `
-                    <img src="data:image/jpeg;base64,${this.src}" class="poster-image" alt="Poster ${eventName}">
-                `;
-            };
-            img.onerror = function() {
-                document.getElementById('posterContainer').innerHTML = `
-                    <div class="text-center py-4">
-                        <i class="fas fa-exclamation-triangle fa-3x text-warning mb-3"></i>
-                        <h6 class="text-muted">Gagal memuat poster</h6>
-                        <p class="text-muted small">Poster mungkin rusak atau tidak tersedia</p>
-                    </div>
-                `;
-            };
 
             // Fetch poster data
             fetch(`get_poster.php?id=${eventId}`)
@@ -541,6 +774,181 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
                     `;
                 });
         }
+
+        // Banner Modal variables and functions
+        let currentTab = 1;
+        let selectedFile = null;
+
+        function openModal() {
+            const modalOverlay = document.getElementById('modalOverlay');
+            modalOverlay.classList.add('show');
+            document.body.style.overflow = 'hidden';
+        }
+
+        function closeModal() {
+            const modalOverlay = document.getElementById('modalOverlay');
+            modalOverlay.classList.remove('show');
+            document.body.style.overflow = 'auto';
+            resetForm();
+            resetTabs();
+        }
+
+        // Close modal if clicking outside modal (overlay)
+        document.getElementById('modalOverlay').addEventListener('click', function(event) {
+            if (event.target === this) {
+                closeModal();
+            }
+        });
+
+        // Tab functionality
+        document.querySelectorAll('.tab').forEach(tab => {
+            tab.addEventListener('click', function() {
+                document.querySelectorAll('.tab').forEach(t => {
+                    t.classList.remove('active');
+                });
+                this.classList.add('active');
+                currentTab = this.getAttribute('data-tab');
+                resetForm();
+            });
+        });
+
+        // File select handler
+        function handleFileSelect(event) {
+            const file = event.target.files[0];
+            if (file) {
+                selectedFile = file;
+                const filePreview = document.getElementById('filePreview');
+                const fileInfo = document.getElementById('fileInfo');
+
+                fileInfo.innerHTML = `
+                    <strong>File dipilih:</strong> ${file.name}<br>
+                    <strong>Ukuran:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                    <strong>Tipe:</strong> ${file.type}
+                `;
+
+                filePreview.style.display = 'block';
+
+                // Add visual feedback to upload area
+                const uploadArea = document.querySelector('.upload-area');
+                uploadArea.style.borderColor = '#4caf50';
+                uploadArea.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+            }
+        }
+
+        // Reset form inputs inside modal
+        function resetForm() {
+            selectedFile = null;
+            document.getElementById('fileInput').value = '';
+            document.getElementById('description').value = '';
+            document.getElementById('filePreview').style.display = 'none';
+
+            const uploadArea = document.querySelector('.upload-area');
+            uploadArea.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            uploadArea.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        }
+
+        // Reset tabs styling and set first tab active
+        function resetTabs() {
+            const tabs = document.querySelectorAll('.tab');
+            tabs.forEach((tab, index) => {
+                tab.classList.remove('active');
+                if (index === 0) {
+                    tab.classList.add('active');
+                    currentTab = 1;
+                }
+            });
+        }
+
+        // Apply banner function
+        function applyBanner() {
+            const description = document.getElementById('description').value.trim();
+            if (!selectedFile) {
+                alert('Silakan pilih file terlebih dahulu!');
+                return;
+            }
+            if (!description) {
+                alert('Silakan masukkan deskripsi!');
+                return;
+            }
+
+            const formData = new FormData();
+            formData.append('banner_id', currentTab);
+            formData.append('description', description);
+            formData.append('banner_image', selectedFile);
+
+            fetch('aturbanner_upload.php', {
+                    method: 'POST',
+                    body: formData
+                })
+
+                .then(response => response.json())
+                .then(data => {
+                    if (data.success) {
+                        alert(`Banner ${currentTab} berhasil diatur!`);
+                        closeModal();
+                        // Optionally reload or update homepage carousel preview if you add that feature later
+                    } else {
+                        alert(`Error: ${data.error || 'Gagal mengatur banner'}`);
+                    }
+                })
+                .catch(() => alert('Terjadi kesalahan dalam mengupload banner.'));
+        }
+
+        //Sampe Sini
+
+        // Keyboard shortcuts (Escape to close modal)
+        document.addEventListener('keydown', function(event) {
+            if (event.key === 'Escape') {
+                const modalOverlay = document.getElementById('modalOverlay');
+                if (modalOverlay.classList.contains('show')) {
+                    closeModal();
+                }
+            }
+        });
+
+        // Drag and drop for upload area
+        const uploadArea = document.querySelector('.upload-area');
+
+        uploadArea.addEventListener('dragover', function(event) {
+            event.preventDefault();
+            this.style.borderColor = '#4caf50';
+            this.style.backgroundColor = 'rgba(76, 175, 80, 0.2)';
+        });
+
+        uploadArea.addEventListener('dragleave', function(event) {
+            event.preventDefault();
+            this.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+        });
+
+        uploadArea.addEventListener('drop', function(event) {
+            event.preventDefault();
+            this.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            this.style.backgroundColor = 'rgba(255, 255, 255, 0.1)';
+
+            const files = event.dataTransfer.files;
+            if (files.length > 0) {
+                const file = files[0];
+                if (file.type.startsWith('image/')) {
+                    selectedFile = file;
+
+                    const filePreview = document.getElementById('filePreview');
+                    const fileInfo = document.getElementById('fileInfo');
+
+                    fileInfo.innerHTML = `
+                        <strong>File dipilih:</strong> ${file.name}<br>
+                        <strong>Ukuran:</strong> ${(file.size / 1024 / 1024).toFixed(2)} MB<br>
+                        <strong>Tipe:</strong> ${file.type}
+                    `;
+
+                    filePreview.style.display = 'block';
+                    this.style.borderColor = '#4caf50';
+                    this.style.backgroundColor = 'rgba(76, 175, 80, 0.1)';
+                } else {
+                    alert('Silakan pilih file gambar!');
+                }
+            }
+        });
     </script>
 </body>
 

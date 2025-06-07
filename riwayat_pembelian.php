@@ -175,7 +175,6 @@ function getPaymentMethodName($method) {
             const pendingOrders = document.querySelectorAll('.status-pending');
             if (pendingOrders.length > 0) {
                 console.log('Checking for order updates...');
-                // You can implement AJAX refresh here if needed
             }
         }, 30000);
     </script>

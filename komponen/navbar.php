@@ -45,6 +45,7 @@ mysqli_stmt_close($stmt);
 </nav>
 
 <script>
+    
     function logout() {
         window.location.href = 'login.php';
     }

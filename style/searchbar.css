@@ -2,6 +2,7 @@
     flex-grow: 1;
     max-width: 400px;
     margin: 0 20px;
+    position: relative; /* Untuk dropdown pencarian */
 }
 
 .search-bar input {
@@ -21,4 +22,89 @@
     border-color: #007bff;
     background-color: white;
     box-shadow: 0 0 0 3px rgba(0, 123, 255, 0.1);
+}
+
+/* Edit: searchbar.css - Styling untuk dropdown pencarian dan kartu */
+.search-results-dropdown {
+    display: none; /* Tersembunyi secara default */
+    position: absolute;
+    background-color: white;
+    border: 1px solid #ddd;
+    border-radius: 8px;
+    box-shadow: 0 4px 12px rgba(0, 0, 0, 0.1);
+    z-index: 1000;
+    margin-top: 10px; /* Spasi di bawah bilah pencarian */
+    max-height: 300px; /* Sesuaikan sesuai kebutuhan */
+    overflow-y: auto;
+    left: 0; /* Sejajar dengan search-bar induk */
+    top: 100%; /* Posisi di bawah bilah pencarian */
+    padding: 10px;
+    box-sizing: border-box; /* Sertakan padding dalam lebar dan tinggi total elemen */
+}
+
+.search-results-dropdown.active {
+    display: block; /* Tampilkan saat aktif */
+}
+
+.search-event-card {
+    padding: 10px;
+    border-bottom: 1px solid #eee;
+    cursor: pointer;
+    transition: background-color 0.2s ease;
+}
+
+.search-event-card:last-child {
+    border-bottom: none;
+}
+
+.search-event-card:hover {
+    background-color: #f9f9f9;
+}
+
+.search-event-card h4 {
+    margin: 0 0 5px 0;
+    font-size: 16px;
+    color: #333;
+}
+
+.search-event-card p {
+    margin: 0;
+    font-size: 12px;
+    color: #666;
+}
+
+.search-pagination {
+    display: flex;
+    justify-content: center;
+    padding: 10px 0 0;
+    border-top: 1px solid #eee;
+    margin-top: 10px;
+}
+
+.search-pagination .page-link {
+    padding: 5px 10px;
+    margin: 0 3px;
+    border: 1px solid #ccc;
+    border-radius: 4px;
+    cursor: pointer;
+    font-size: 13px;
+    transition: background-color 0.2s ease, color 0.2s ease;
+}
+
+.search-pagination .page-link:hover {
+    background-color: #f0f0f0;
+}
+
+.search-pagination .page-link.active {
+    background-color: #007bff;
+    color: white;
+    border-color: #007bff;
+}
+
+.search-pagination span {
+    display: inline-block;
+    padding: 5px 10px;
+    margin: 0 3px;
+    font-size: 13px;
+    color: #888;
 }

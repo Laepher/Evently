@@ -20,8 +20,14 @@ mysqli_stmt_close($stmt);
 <nav class="navbar">
     <button class="burger">☰</button>
     <a href="homepage.php" class="logo">EVENTLY</a>
-    <div class="search-bar">
-        <input type="text" placeholder="Search...">
+    <div class="search-bar" id="searchBarContainer"> <?php // Edit: Menambahkan ID untuk akses JS ?>
+        <input type="text" placeholder="Search..." id="searchInput" oninput="searchEvents()" onclick="showSearchDropdown()"> <?php // Edit: Menambahkan ID, oninput, dan onclick ?>
+        <?php // Edit: Mulai - Kontainer dropdown pencarian ?>
+        <div id="searchResultsDropdown" class="search-results-dropdown">
+        <div id="searchResultsContent"></div>
+        <div id="searchPagination" class="search-pagination"></div>
+        </div>
+        <?php // Edit: Akhir - Kontainer dropdown pencarian ?>
     </div>
     <div class="nav-links">
         <a href="homepage.php" class="home-link">BERANDA</a>
@@ -102,3 +108,6 @@ mysqli_stmt_close($stmt);
         });
     });
 </script>
+
+<script src="search.js"></script> <?php // Edit: Menyertakan file JavaScript baru ?>
+<link rel="stylesheet" href="searchbar.css"> <?php // Edit: Menyertakan file CSS baru untuk styling dropdown pencarian ?>

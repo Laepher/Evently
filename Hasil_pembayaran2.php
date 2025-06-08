@@ -5,6 +5,7 @@
     <meta charset="UTF-8">
     <meta name="viewport" content="width=device-width, initial-scale=1.0">
     <title>Pembayaran Loket</title>
+    <link rel="stylesheet" href="style/searchbar.css">
     <link rel="stylesheet" href="style/hasil_pembayaran2.css">
     <link rel="stylesheet" href="style/sidebar.css">
 </head>

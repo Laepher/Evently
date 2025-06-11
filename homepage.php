@@ -21,8 +21,8 @@ while ($row = mysqli_fetch_assoc($bannerResult)) {
 </head>
 
 <body>
-    <?php include 'komponen/navbar.php'; ?>
     <main>
+        <?php include 'komponen/navbar.php'; ?>
         <!-- SLIDER -->
         <div class="carousel-container">
             <div class="carousel">
@@ -121,11 +121,7 @@ while ($row = mysqli_fetch_assoc($bannerResult)) {
     </div>
     </main>
 
-    <div class="footer">
-        <p>&copy; 2025 EVENTLY. All Rights Reserved.</p>
-        <ul class="footer-links">
-            <li><a href="#">Contact-Admin</a></li>
-        </ul>
+    <?php include 'komponen/footer.php'; ?>
     </div>
     <script src="Homepage_script.js"></script>
 </body>

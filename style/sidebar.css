@@ -26,6 +26,77 @@
 .sidebar.hidden {
   transform: translateX(-100%);
 }
+/* Style yang sudah diperbaiki untuk sidebar menu */
+/* Pastikan sidebar menu terlihat */
+#userSidebar .sidebar-menu {
+  margin: 25px 0;
+  padding: 0;
+  display: block;
+}
+
+/* Style untuk link sidebar */
+#userSidebar .sidebar-link {
+  display: flex !important;
+  align-items: center;
+  padding: 14px 18px;
+  margin-bottom: 10px;
+  text-decoration: none;
+  color: #333 !important;
+  border-radius: 10px;
+  transition: all 0.25s ease;
+  font-weight: 500;
+  font-size: 14px;
+  background: rgba(255, 255, 255, 0.85) !important;
+  border: 1px solid rgba(255, 255, 255, 0.3);
+  box-shadow: 0 2px 6px rgba(0, 0, 0, 0.08);
+  position: relative;
+  cursor: pointer;
+}
+
+/* Hover effect untuk sidebar link */
+#userSidebar .sidebar-link:hover {
+  background: rgba(0, 119, 255, 0.9) !important;
+  color: white !important;
+  transform: translateX(5px);
+  box-shadow: 0 4px 12px rgba(0, 119, 255, 0.25);
+  border-color: rgba(255, 255, 255, 0.4);
+}
+
+/* Style untuk icon dalam sidebar link */
+#userSidebar .sidebar-link i {
+  margin-right: 10px;
+  font-size: 16px;
+  width: 20px;
+  text-align: center;
+  transition: all 0.25s ease;
+}
+
+/* Hover effect untuk icon */
+#userSidebar .sidebar-link:hover i {
+  transform: translateX(2px);
+}
+
+/* Active state */
+#userSidebar .sidebar-link:active {
+  transform: translateX(3px);
+  box-shadow: 0 2px 8px rgba(0, 119, 255, 0.2);
+}
+
+/* Style untuk fokus accessibility */
+#userSidebar .sidebar-link:focus {
+  outline: none;
+  border-color: #0077ff;
+  box-shadow: 0 0 0 2px rgba(0, 119, 255, 0.4);
+}
+
+/* Pastikan tidak ada style yang override */
+#userSidebar .sidebar-link:visited {
+  color: #333 !important;
+}
+
+#userSidebar .sidebar-link:visited:hover {
+  color: white !important;
+}
 
 .user-avatar {
   width: 80px;

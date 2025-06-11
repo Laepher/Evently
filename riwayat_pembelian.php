@@ -307,7 +307,7 @@ function checkStatusUpdates($user_id, $conn) {
                                 </div>
                                 <?php else: ?>
                                 <div class="payment-status" style="color: #ffc107; font-weight: bold; margin-top: 10px;">
-                                    <i class="fas fa-clock"></i> Menunggu Pembayaran
+                                    <i class="fas fa-clock"></i> Menunggu Konfirmasi
                                 </div>
                                 <?php endif; ?>
                             </div>

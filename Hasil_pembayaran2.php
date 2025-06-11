@@ -41,7 +41,6 @@
                     <p class="upload-note">Format yang didukung: JPG, PNG, PDF (Max 5MB)</p>
                     <input type="file" id="paymentProof" name="paymentProof" accept="image/*,.pdf" onchange="handleFileSelect(this)">
                 </label>
-
             </div>
         </div>
 
@@ -61,7 +60,7 @@
         </div>
 
         <div class="button">
-            <button>Konfirmasi Pembayaran</button>
+            <button class="confirm-button" id="confirmButton">Konfirmasi Pembayaran</button>
         </div>
 
         <div class="extra">
@@ -82,14 +81,16 @@
                 if (file.size > maxSize) {
                     alert('File terlalu besar! Maksimal 5MB.');
                     input.value = '';
+                    resetUploadDisplay();
                     return;
                 }
 
-                // Check file type
+                // Check file type (Allow images and PDF)
                 const allowedTypes = ['image/jpeg', 'image/jpg', 'image/png', 'application/pdf'];
                 if (!allowedTypes.includes(file.type)) {
                     alert('Format file tidak didukung! Gunakan JPG, PNG, atau PDF.');
                     input.value = '';
+                    resetUploadDisplay();
                     return;
                 }
 
@@ -106,15 +107,21 @@
                 uploadInput.style.background = 'rgba(144, 255, 144, 0.1)';
 
             } else {
-                // Reset if no file selected
-                fileInfo.classList.remove('show');
-                uploadText.textContent = '📎 Klik untuk pilih file atau drag & drop';
-                uploadText.style.color = 'rgba(255, 255, 255, 0.9)';
-
-                const uploadInput = document.querySelector('.file-upload-input');
-                uploadInput.style.borderColor = 'rgba(255, 255, 255, 0.5)';
-                uploadInput.style.background = 'rgba(255, 255, 255, 0.1)';
+                resetUploadDisplay();
             }
+        }
+
+        function resetUploadDisplay() {
+            const fileInfo = document.getElementById('fileInfo');
+            const uploadText = document.querySelector('.upload-text');
+            const uploadInput = document.querySelector('.file-upload-input');
+            
+            // Reset if no file selected
+            fileInfo.classList.remove('show');
+            uploadText.textContent = '📎 Klik untuk pilih file atau drag & drop';
+            uploadText.style.color = 'rgba(255, 255, 255, 0.9)';
+            uploadInput.style.borderColor = 'rgba(255, 255, 255, 0.5)';
+            uploadInput.style.background = 'rgba(255, 255, 255, 0.1)';
         }
 
         // Handle drag and drop
@@ -140,6 +147,15 @@
                 // Handle dropped files
                 uploadContainer.addEventListener('drop', handleDrop, false);
             }
+
+            // Event listener untuk tombol konfirmasi
+            const confirmButton = document.getElementById('confirmButton');
+            if (confirmButton) {
+                confirmButton.addEventListener('click', confirmPayment);
+            }
+
+            // Check order data on page load
+            checkOrderData();
         });
 
         function preventDefaults(e) {
@@ -169,12 +185,98 @@
                 handleFileSelect(fileInput);
             }
         }
+
+        // Check if order data exists
+        function checkOrderData() {
+            const id_pesanan = sessionStorage.getItem('id_pesanan') || 
+                              new URLSearchParams(window.location.search).get('id_pesanan');
+            
+            if (!id_pesanan) {
+                console.warn('No order ID found');
+                // Optional: Show warning or redirect
+                // alert('Data pesanan tidak ditemukan. Silakan ulangi proses pemesanan.');
+                // window.location.href = 'homepage.php';
+            } else {
+                console.log('Order ID found:', id_pesanan);
+            }
+        }
+
+        // Fungsi konfirmasi pembayaran yang diperbaiki
+        function confirmPayment() {
+            const fileInput = document.getElementById('paymentProof');
+            
+            if (!fileInput.files[0]) {
+                alert('Silakan upload bukti pembayaran terlebih dahulu!');
+                return;
+            }
+            
+            // Get order ID from sessionStorage or URL parameter
+            const id_pesanan = sessionStorage.getItem('id_pesanan') || 
+                              new URLSearchParams(window.location.search).get('id_pesanan');
+            
+            if (!id_pesanan) {
+                alert('Data pesanan tidak ditemukan! Silakan ulangi proses pemesanan.');
+                window.location.href = 'homepage.php';
+                return;
+            }
+            
+            if (confirm('Apakah Anda yakin ingin mengkonfirmasi pembayaran ini?')) {
+                // Disable button to prevent double submission
+                const confirmButton = document.getElementById('confirmButton');
+                const originalText = confirmButton.textContent;
+                confirmButton.disabled = true;
+                confirmButton.textContent = 'Sedang memproses...';
+                
+                // Prepare FormData
+                const formData = new FormData();
+                formData.append('bukti_bayar', fileInput.files[0]);
+                formData.append('id_pesanan', id_pesanan);
+                formData.append('action', 'upload_bukti');
+                
+                // Send to server
+                fetch('process_pembayaran.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Pembayaran berhasil dikonfirmasi! Terima kasih.');
+                        // Clear session data
+                        sessionStorage.removeItem('id_pesanan');
+                        // Redirect to success page
+                        window.location.href = 'homepage.php?payment_success=1';
+                    } else {
+                        alert('Gagal mengupload bukti pembayaran: ' + (data.message || 'Terjadi kesalahan'));
+                        // Re-enable button on error
+                        confirmButton.disabled = false;
+                        confirmButton.textContent = originalText;
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengupload bukti pembayaran. Silakan coba lagi.');
+                    // Re-enable button on error
+                    confirmButton.disabled = false;
+                    confirmButton.textContent = originalText;
+                });
+            }
+        }
+
+        // Menu toggle functionality (if exists)
         const toggleButton = document.querySelector('.menu-toggle');
         const navLinks = document.querySelector('.nav-links');
 
-        toggleButton.addEventListener('click', () => {
-            navLinks.classList.toggle('active');
-        });
+        if (toggleButton && navLinks) {
+            toggleButton.addEventListener('click', () => {
+                navLinks.classList.toggle('active');
+            });
+        }
     </script>
     <script src="Homepage_script.js"></script>
     <?php include 'komponen/footer.php'; ?>

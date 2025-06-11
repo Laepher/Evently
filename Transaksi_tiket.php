@@ -1,11 +1,12 @@
 <?php
+session_start();
 include 'config/config.php';
 //perubahan
 $id_event = isset($_GET['id_event']) ? $_GET['id_event'] : 11100;
 
 $query = "SELECT e.*, t.harga_tiket FROM event e
-          JOIN tiket t ON e.id_event = t.id_event
-          WHERE e.id_event = ?";
+        JOIN tiket t ON e.id_event = t.id_event
+        WHERE e.id_event = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id_event);
 $stmt->execute();
@@ -212,25 +213,80 @@ $hargaTiket = (int)$event['harga_tiket'];
             `Total: Rp${totalPrice.toLocaleString()}` : 'Total: Rp0';
     }
 
-    function confirmBayar() {
-        // Determine which payment result page to redirect to based on selected payment method
-        let redirectUrl = '';
+function confirmBayar() {
+    // Debug: Cek data yang akan dikirim
+    const totalTickets = ticketTypes.reduce((acc, ticket) => acc + ticket.quantity, 0);
+    const totalPrice = ticketTypes.reduce((acc, ticket) => acc + (ticket.quantity * ticket.price), 0);
+    
+    console.log('Data yang akan dikirim:', {
+        id_event: <?= $id_event ?>,
+        total_harga: totalPrice,
+        banyak_tiket: totalTickets,
+        metode_bayar: selectedPaymentMethod
+    });
+    
+    // Kirim data ke server menggunakan POST
+    const formData = new FormData();
+    formData.append('id_event', <?= $id_event ?>);
+    formData.append('total_harga', totalPrice);
+    formData.append('banyak_tiket', totalTickets);
+    formData.append('metode_bayar', selectedPaymentMethod);
+    formData.append('action', 'create_pesanan');
+    
+    fetch('process_pesanan.php', {
+        method: 'POST',
+        body: formData
+    })
+    .then(response => {
+        console.log('Response status:', response.status);
+        console.log('Response headers:', response.headers);
         
-        switch(selectedPaymentMethod) {
-            case 'e-money':
-                redirectUrl = 'Hasil_pembayaran.php';
-                break;
-            case 'e-banking':
-            case 'transfer':
-                redirectUrl = 'Hasil_pembayaran2.php';
-                break;
-            default:
-                alert('Metode pembayaran tidak valid');
-                return;
+        // Cek apakah response OK
+        if (!response.ok) {
+            throw new Error(`HTTP error! status: ${response.status}`);
         }
         
-        window.location.href = redirectUrl;
-    }
+        // Cek content-type
+        const contentType = response.headers.get('content-type');
+        if (!contentType || !contentType.includes('application/json')) {
+            // Jika bukan JSON, tampilkan response sebagai text untuk debugging
+            return response.text().then(text => {
+                console.log('Response text:', text);
+                throw new Error('Response bukan JSON: ' + text.substring(0, 200));
+            });
+        }
+        
+        return response.json();
+    })
+    .then(data => {
+        console.log('Response data:', data);
+        
+        if (data.success) {
+            // Simpan ID pesanan untuk digunakan di halaman berikutnya
+            sessionStorage.setItem('id_pesanan', data.id_pesanan);
+            
+            // Redirect ke halaman pembayaran
+            let redirectUrl = '';
+            switch(selectedPaymentMethod) {
+                case 'e-money':
+                    redirectUrl = 'Hasil_pembayaran.php';
+                    break;
+                case 'e-banking':
+                case 'transfer':
+                    redirectUrl = 'Hasil_pembayaran2.php';
+                    break;
+            }
+            window.location.href = redirectUrl;
+        } else {
+            alert('Gagal membuat pesanan: ' + (data.message || 'Unknown error'));
+        }
+    })
+    .catch(error => {
+        console.error('Detailed Error:', error);
+        alert('Terjadi kesalahan saat memproses pesanan: ' + error.message);
+    });
+}
+
 
     function goBack() {
         elements.confirmModal.style.display = 'none';

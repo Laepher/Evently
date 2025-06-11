@@ -19,7 +19,7 @@
             <!-- QR Code dan Upload Section berdampingan -->
             <div class="payment-section">
                 <div class="qr-container">
-                    <img src="./assets/QR code.jpg" />
+                    <img src="./assets/QR code.jpg" alt="QR Code Pembayaran" />
                 </div>
 
                 <!-- Upload Section -->
@@ -69,12 +69,12 @@
     </main>
 
     <!-- Footer -->
-     <footer class="footer">
-    <p>&copy; 2025 EVENTLY. All Rights Reserved.</p>
-    <ul class="footer-links">
-        <li><a href="#">Contact-Admin</a></li>
-    </ul>
-</footer>
+    <footer class="footer">
+        <p>&copy; 2025 EVENTLY. All Rights Reserved.</p>
+        <ul class="footer-links">
+            <li><a href="#">Contact-Admin</a></li>
+        </ul>
+    </footer>
 
     <script>
         // Modal elements
@@ -229,19 +229,83 @@
             }
         }
 
-        // Confirm payment function
+        // Confirm payment function (DIPERBAIKI)
         function confirmPayment() {
+            // Validasi file terlebih dahulu
             if (!fileInput.files[0]) {
                 alert('Silakan upload bukti pembayaran terlebih dahulu!');
                 return;
             }
             
-            // Simulate payment confirmation
+            // Ambil ID pesanan dari sessionStorage atau URL parameter
+            const id_pesanan = sessionStorage.getItem('id_pesanan') || 
+                              new URLSearchParams(window.location.search).get('id_pesanan');
+            
+            if (!id_pesanan) {
+                alert('Data pesanan tidak ditemukan! Silakan ulangi proses pemesanan.');
+                // Redirect ke halaman sebelumnya atau homepage
+                window.location.href = 'homepage.php';
+                return;
+            }
+            
             if (confirm('Apakah Anda yakin ingin mengkonfirmasi pembayaran ini?')) {
-                alert('Pembayaran berhasil dikonfirmasi! Terima kasih.');
-                // Here you would typically send the data to your server
+                // Disable button untuk mencegah double click
+                const confirmButton = document.getElementById('konfirmasi-button');
+                confirmButton.disabled = true;
+                confirmButton.textContent = 'Sedang memproses...';
+                
+                // Siapkan FormData untuk upload
+                const formData = new FormData();
+                formData.append('bukti_bayar', fileInput.files[0]);
+                formData.append('id_pesanan', id_pesanan);
+                formData.append('action', 'upload_bukti');
+                
+                // Kirim request ke server
+                fetch('process_pembayaran.php', {
+                    method: 'POST',
+                    body: formData
+                })
+                .then(response => {
+                    if (!response.ok) {
+                        throw new Error(`HTTP error! status: ${response.status}`);
+                    }
+                    return response.json();
+                })
+                .then(data => {
+                    if (data.success) {
+                        alert('Pembayaran berhasil dikonfirmasi! Terima kasih.');
+                        // Hapus data session
+                        sessionStorage.removeItem('id_pesanan');
+                        // Redirect ke halaman sukses atau homepage
+                        window.location.href = 'homepage.php?payment_success=1';
+                    } else {
+                        alert('Gagal mengupload bukti pembayaran: ' + (data.message || 'Terjadi kesalahan'));
+                        // Re-enable button
+                        confirmButton.disabled = false;
+                        confirmButton.textContent = 'KONFIRMASI';
+                    }
+                })
+                .catch(error => {
+                    console.error('Error:', error);
+                    alert('Terjadi kesalahan saat mengupload bukti pembayaran. Silakan coba lagi.');
+                    // Re-enable button
+                    confirmButton.disabled = false;
+                    confirmButton.textContent = 'KONFIRMASI';
+                });
             }
         }
+
+        // Check if there's payment data on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            const id_pesanan = sessionStorage.getItem('id_pesanan') || 
+                              new URLSearchParams(window.location.search).get('id_pesanan');
+            
+            if (!id_pesanan) {
+                // Jika tidak ada data pesanan, tampilkan peringatan
+                console.warn('No order ID found');
+                // Bisa ditambahkan redirect atau peringatan di sini
+            }
+        });
     </script>
 </body>
 </html>

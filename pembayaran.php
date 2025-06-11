@@ -1,12 +1,5 @@
 <?php
-// Sample data - Replace this section with database connection
-$ticket_orders = [
-    ['id' => 'T001', 'event' => 'Concert Rock Spectacular', 'user_id' => 'U001', 'quantity' => 2, 'total' => 300000, 'status' => 'Confirmed'],
-    ['id' => 'T002', 'event' => 'Jazz Night Festival', 'user_id' => 'U002', 'quantity' => 1, 'total' => 200000, 'status' => 'Pending'],
-    ['id' => 'T003', 'event' => 'Tech Conference 2024', 'user_id' => 'U003', 'quantity' => 3, 'total' => 1500000, 'status' => 'Confirmed'],
-    ['id' => 'T004', 'event' => 'Art Exhibition Modern', 'user_id' => 'U004', 'quantity' => 1, 'total' => 75000, 'status' => 'Cancelled'],
-    ['id' => 'T005', 'event' => 'Food Festival Jakarta', 'user_id' => 'U005', 'quantity' => 4, 'total' => 400000, 'status' => 'Confirmed'],
-];
+include 'config/config.php';
 
 // Function to format currency
 function formatCurrency($amount)
@@ -14,21 +7,40 @@ function formatCurrency($amount)
     return 'Rp ' . number_format($amount, 0, ',', '.');
 }
 
+// Function to format date
+function formatDate($date)
+{
+    if (empty($date) || $date == '0000-00-00 00:00:00') {
+        return '-';
+    }
+    return date('d/m/Y H:i', strtotime($date));
+}
+
 // Handle search functionality
 $searchTerm = '';
-$filteredOrders = $ticket_orders;
+$whereClause = '';
 
 if (isset($_GET['search']) && !empty($_GET['search'])) {
     $searchTerm = trim($_GET['search']);
-    $filteredOrders = array_filter($ticket_orders, function ($order) use ($searchTerm) {
-        return stripos($order['id'], $searchTerm) !== false ||
-            stripos($order['event'], $searchTerm) !== false ||
-            stripos($order['user_id'], $searchTerm) !== false;
-    });
+    $searchTerm = mysqli_real_escape_string($conn, $searchTerm);
+    $whereClause = "WHERE (p.id_pembayaran LIKE '%$searchTerm%' 
+                    OR p.id_pesanan LIKE '%$searchTerm%' 
+                    OR ps.id_user LIKE '%$searchTerm%' 
+                    OR e.nama_event LIKE '%$searchTerm%')";
 }
 
-// Reset array keys after filtering
-$filteredOrders = array_values($filteredOrders);
+// Get payment data with joins
+$query = "SELECT p.id_pembayaran, p.id_pesanan, p.bukti_bayar, 
+                 ps.id_user, ps.banyak_tiket, ps.total_harga, ps.metode_bayar, ps.tanggal_pesanan,
+                 e.nama_event, t.harga_tiket
+          FROM pembayaran p
+          INNER JOIN pesanan ps ON p.id_pesanan = ps.id_pesanan
+          INNER JOIN tiket t ON ps.id_tiket = t.id_tiket
+          INNER JOIN event e ON t.id_event = e.id_event
+          $whereClause
+          ORDER BY p.id_pembayaran DESC";
+
+$paymentResult = mysqli_query($conn, $query);
 ?>
 
 <!DOCTYPE html>
@@ -42,301 +54,31 @@ $filteredOrders = array_values($filteredOrders);
     <link href="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/css/bootstrap.min.css" rel="stylesheet">
     <!-- Font Awesome -->
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.0/css/all.min.css">
+    <!-- Custom Admin Styles -->
+    <link rel="stylesheet" href="style/admin-styles.css">
     <style>
-        /* =================================
-           ADMIN PANEL STYLES - EVENTLY
-           ================================= */
-
-        /* CSS Variables */
-        :root {
-            --primary-color: #3B8BFF;
-            --primary-hover: #2a6adf;
-            --secondary-color: #6c757d;
-            --success-color: #28a745;
-            --warning-color: #ffc107;
-            --danger-color: #dc3545;
-            --light-color: #f8f9fa;
-            --dark-color: #495057;
-            --muted-color: #6c757d;
-            --border-color: #dee2e6;
-            --hover-bg: rgba(0, 0, 0, 0.075);
-            --stripe-bg: rgba(0, 0, 0, 0.05);
-        }
-
-        /* =================================
-           NAVBAR STYLES
-           ================================= */
-        .navbar-custom {
-            background-color: var(--primary-color) !important;
-        }
-
-        .admin-username {
-            color: #fff;
-            font-weight: 500;
-            margin-right: 1rem;
-        }
-
-        .logout-link {
-            color: #ffcccb;
-            font-weight: 600;
-            text-decoration: none;
-            transition: all 0.3s ease;
-            padding: 4px 8px;
-            border-radius: 4px;
-        }
-
-        .logout-link:hover {
-            color: #fff;
-            background-color: rgba(255, 255, 255, 0.1);
-            text-decoration: none;
-            transform: translateY(-1px);
-        }
-
-        /* =================================
-           SIDEBAR STYLES
-           ================================= */
-        .sidebar {
-            min-height: calc(100vh - 56px);
-        }
-
-        .text-primary-custom {
-            color: var(--primary-color) !important;
-        }
-
-        .border-primary-custom {
-            border-color: var(--primary-color) !important;
-        }
-
-        .btn-outline-primary-custom {
-            color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        .btn-outline-primary-custom:hover {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-        }
-
-        /* Remove underlines from sidebar navigation */
-        .sidebar .nav-link {
-            text-decoration: none !important;
-        }
-
-        .sidebar .nav-link:hover {
-            text-decoration: none !important;
-        }
-
-        /* =================================
-           TABLE STYLES
-           ================================= */
-        .table {
-            width: 100%;
-            border-collapse: collapse;
-            color: #212529;
-            font-size: 0.875rem;
-            background-color: #fff;
-        }
-
-        .table th,
-        .table td {
-            padding: 0.75rem;
-            vertical-align: middle;
-            border-top: 1px solid var(--border-color);
-        }
-
-        .table thead th {
-            vertical-align: bottom;
-            border-bottom: 2px solid var(--border-color);
-            border-top: none;
-            background-color: var(--light-color);
-            font-weight: 600;
-            color: var(--dark-color);
-            position: sticky;
-            top: 0;
-            text-transform: uppercase;
-            letter-spacing: 0.5px;
-            font-size: 0.75rem;
-        }
-
-        .table tbody tr:hover {
-            background-color: var(--hover-bg);
-        }
-
-        .table tbody tr:nth-child(odd) {
-            background-color: var(--stripe-bg);
-        }
-
-        /* =================================
-           SEARCH STYLES
-           ================================= */
-        .search-container {
-            position: relative;
-        }
-
-        .search-btn {
-            position: absolute;
-            right: 8px;
-            top: 50%;
-            transform: translateY(-50%);
-            border: none;
-            background: none;
-            color: var(--primary-color);
-            padding: 4px 8px;
-        }
-
-        .search-btn:hover {
-            color: var(--primary-hover);
-        }
-
-        /* =================================
-           BUTTON STYLES
-           ================================= */
-
-        /* Edit Button */
-        .btn-edit {
-            background-color: var(--primary-color);
-            border-color: var(--primary-color);
-            color: white;
-            padding: 0.25rem 0.5rem;
-            font-size: 0.75rem;
-            border-radius: 0.25rem;
-            text-decoration: none;
-            transition: all 0.2s ease;
-            display: inline-block;
-            font-weight: 500;
-        }
-
-        .btn-edit:hover {
-            background-color: var(--primary-hover);
-            border-color: var(--primary-hover);
-            color: white;
-            text-decoration: none;
-        }
-
-        /* Delete Button */
-        .btn-delete {
-            background-color: var(--danger-color);
-            border-color: var(--danger-color);
-            color: white;
-            padding: 0.375rem 0.75rem;
-            font-size: 0.875rem;
+        
+        .bukti-image {
+            max-height: 60px;
+            max-width: 60px;
+            object-fit: cover;
             border-radius: 0.375rem;
-            transition: all 0.15s ease-in-out;
+            cursor: pointer;
+            border: 2px solid #dee2e6;
+            transition: all 0.2s ease;
         }
-
-        .btn-delete:hover {
-            background-color: #c82333;
-            border-color: #bd2130;
-            color: white;
-            transform: translateY(-1px);
-            box-shadow: 0 2px 4px rgba(220, 53, 69, 0.25);
+        
+        .bukti-image:hover {
+            border-color: #3B8BFF;
+            transform: scale(1.05);
         }
-
-        .btn-delete:focus {
-            box-shadow: 0 0 0 0.2rem rgba(220, 53, 69, 0.5);
+        
+        .modal-image {
+            max-width: 100%;
+            max-height: 80vh;
+            object-fit: contain;
         }
-
-        /* =================================
-           STATUS DROPDOWN STYLES
-           ================================= */
-        .status-dropdown {
-            border: 1px solid var(--border-color);
-            font-size: 0.75rem;
-            font-weight: 600;
-            text-transform: uppercase;
-            min-width: 120px;
-        }
-
-        .status-dropdown option[value="Confirmed"] {
-            color: var(--success-color);
-        }
-
-        .status-dropdown option[value="Pending"] {
-            color: var(--warning-color);
-        }
-
-        .status-dropdown option[value="Cancelled"] {
-            color: var(--danger-color);
-        }
-
-        /* =================================
-           CATEGORY STYLES
-           ================================= */
-        .category {
-            background-color: var(--light-color);
-            color: var(--dark-color);
-            font-weight: 500;
-        }
-
-        /* =================================
-           EMPTY STATE STYLES
-           ================================= */
-        .empty-state {
-            text-align: center;
-            padding: 3rem 1rem;
-        }
-
-        .empty-state i {
-            font-size: 3rem;
-            color: var(--muted-color);
-            margin-bottom: 1rem;
-        }
-
-        .empty-state h5 {
-            color: var(--muted-color);
-            margin-bottom: 0.5rem;
-        }
-
-        .empty-state p {
-            color: var(--muted-color);
-        }
-
-        /* =================================
-           RESPONSIVE ADJUSTMENTS
-           ================================= */
-        @media (max-width: 768px) {
-            .sidebar {
-                min-height: auto;
-            }
-
-            .table-responsive {
-                font-size: 0.8rem;
-            }
-
-            .btn-edit,
-            .btn-delete {
-                padding: 0.2rem 0.4rem;
-                font-size: 0.7rem;
-            }
-
-            .search-container {
-                width: 100% !important;
-                margin-bottom: 1rem;
-            }
-
-            .admin-username {
-                display: none;
-            }
-        }
-
-        /* =================================
-           UTILITY CLASSES
-           ================================= */
-        .fw-medium {
-            font-weight: 500;
-        }
-
-        .text-dark-custom {
-            color: #212529 !important;
-        }
-
-        .text-muted-custom {
-            color: var(--muted-color) !important;
-        }
-
-        .bg-light-custom {
-            background-color: var(--light-color) !important;
-        }
+        
     </style>
 </head>
 
@@ -360,16 +102,16 @@ $filteredOrders = array_values($filteredOrders);
             <div class="col-md-2 col-lg-2 sidebar bg-white p-4">
                 <h5 class="fw-bold text-primary-custom mb-4">KELOLA</h5>
                 <nav class="nav flex-column">
-                    <a href="daftarevent.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="daftarevent.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         DAFTAR EVENT
                     </a>
-                    <a href="daftaruser.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="daftaruser.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         DAFTAR USER
                     </a>
-                    <a href="pemesanantiket.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="pemesanantiket.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         PEMESANAN TIKET
                     </a>
-                    <a href="pembayaran.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3" href="#">
+                    <a href="pembayaran.php" class="nav-link text-primary-custom fw-semibold p-0 mb-3">
                         PEMBAYARAN USER
                     </a>
                 </nav>
@@ -388,7 +130,7 @@ $filteredOrders = array_values($filteredOrders);
                                 type="text"
                                 name="search"
                                 class="form-control"
-                                placeholder="Search order..."
+                                placeholder="Search payment..."
                                 value="<?php echo htmlspecialchars($searchTerm); ?>"
                                 style="padding-right: 40px;">
                             <button class="search-btn" type="submit">
@@ -398,60 +140,78 @@ $filteredOrders = array_values($filteredOrders);
                     </form>
                 </div>
 
+                <!-- Success/Error Messages -->
+                <?php if (isset($successMessage)): ?>
+                    <div class="alert alert-success alert-dismissible fade show" role="alert">
+                        <i class="fas fa-check-circle me-2"></i><?php echo $successMessage; ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+
+                <?php if (isset($errorMessage)): ?>
+                    <div class="alert alert-danger alert-dismissible fade show" role="alert">
+                        <i class="fas fa-exclamation-circle me-2"></i><?php echo $errorMessage; ?>
+                        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+                    </div>
+                <?php endif; ?>
+
                 <!-- Search Results Info -->
                 <?php if (!empty($searchTerm)): ?>
                     <div class="alert alert-info d-flex justify-content-between align-items-center" role="alert">
                         <span>
                             <i class="fas fa-info-circle me-2"></i>
-                            Showing <?php echo count($filteredOrders); ?> result(s) for "<?php echo htmlspecialchars($searchTerm); ?>"
+                            Showing <?php echo mysqli_num_rows($paymentResult); ?> result(s) for "<?php echo htmlspecialchars($searchTerm); ?>"
                         </span>
                         <a href="?" class="btn btn-sm btn-outline-secondary">Clear Search</a>
                     </div>
                 <?php endif; ?>
 
-                <!-- Orders Table -->
+                <!-- Payments Table -->
                 <div class="card shadow-sm">
                     <div class="card-body p-0">
-                        <?php if (empty($filteredOrders)): ?>
+                        <?php if (!$paymentResult || mysqli_num_rows($paymentResult) === 0): ?>
                             <div class="empty-state">
-                                <i class="fas fa-ticket-alt"></i>
-                                <h5>No orders found</h5>
-                                <p>Try adjusting your search criteria</p>
+                                <i class="fas fa-receipt"></i>
+                                <h5>No payments found</h5>
+                                <p>No payment records match your criteria</p>
                             </div>
                         <?php else: ?>
                             <div class="table-responsive">
                                 <table class="table table-striped table-hover align-middle">
                                     <thead>
                                         <tr>
-                                            <th scope="col" class="text-center" style="width: 100px;">ID TIKET</th>
+                                            <th scope="col" class="text-center" style="width: 100px;">ID PEMBAYARAN</th>
+                                            <th scope="col" class="text-center" style="width: 100px;">ID PESANAN</th>
                                             <th scope="col">NAMA EVENT</th>
                                             <th scope="col" class="text-center" style="width: 80px;">ID USER</th>
-                                            <th scope="col" class="text-center" style="width: 120px;">BANYAK TIKET</th>
-                                            <th scope="col" class="text-end" style="width: 150px;">TOTAL HARGA</th>
-                                            <th scope="col" class="text-center" style="width: 130px;">STATUS</th>
+                                            <th scope="col" class="text-center" style="width: 120px;">TOTAL HARGA</th>
+                                            <th scope="col" class="text-center" style="width: 100px;">BUKTI BAYAR</th>
                                         </tr>
                                     </thead>
                                     <tbody>
-                                        <?php foreach ($filteredOrders as $order): ?>
+                                        <?php while ($payment = mysqli_fetch_assoc($paymentResult)): ?>
                                             <tr>
                                                 <td class="text-center">
-                                                    <span class="badge bg-light text-dark fw-semibold"><?php echo htmlspecialchars($order['id']); ?></span>
+                                                    <span class="badge bg-light text-dark fw-semibold"><?php echo htmlspecialchars($payment['id_pembayaran']); ?></span>
                                                 </td>
-                                                <td class="fw-medium text-dark"><?php echo htmlspecialchars($order['event']); ?></td>
-                                                <td class="text-center text-muted"><?php echo htmlspecialchars($order['user_id']); ?></td>
-                                                <td class="text-center"><?php echo $order['quantity']; ?></td>
-                                                <td class="text-end fw-medium"><?php echo formatCurrency($order['total']); ?></td>
                                                 <td class="text-center">
-                                                    <select class="form-select form-select-sm status-dropdown"
-                                                        data-order-id="<?php echo htmlspecialchars($order['id']); ?>"
-                                                        onchange="updateStatus(this)">
-                                                        <option value="Confirmed" <?php echo $order['status'] === 'Confirmed' ? 'selected' : ''; ?>>Confirmed</option>
-                                                        <option value="Pending" <?php echo $order['status'] === 'Pending' ? 'selected' : ''; ?>>Pending</option>
-                                                        <option value="Cancelled" <?php echo $order['status'] === 'Cancelled' ? 'selected' : ''; ?>>Cancelled</option>
-                                                    </select>
+                                                    <span class="badge bg-secondary"><?php echo htmlspecialchars($payment['id_pesanan']); ?></span>
+                                                </td>
+                                                <td class="fw-medium text-dark"><?php echo htmlspecialchars($payment['nama_event']); ?></td>
+                                                <td class="text-center text-muted"><?php echo htmlspecialchars($payment['id_user']); ?></td>
+                                                <td class="text-center fw-medium"><?php echo formatCurrency($payment['total_harga']); ?></td>
+                                                <td class="text-center">
+                                                    <?php if (!empty($payment['bukti_bayar'])): ?>
+                                                        <img src="uploads/bukti_pembayaran/<?php echo htmlspecialchars($payment['bukti_bayar']); ?>" 
+                                                             class="bukti-image" 
+                                                             alt="Bukti Pembayaran"
+                                                             onclick="showImageModal(this.src, '<?php echo htmlspecialchars($payment['id_pembayaran']); ?>')">
+                                                    <?php else: ?>
+                                                        <span class="text-muted">-</span>
+                                                    <?php endif; ?>
                                                 </td>
                                             </tr>
-                                        <?php endforeach; ?>
+                                        <?php endwhile; ?>
                                     </tbody>
                                 </table>
                             </div>
@@ -459,12 +219,37 @@ $filteredOrders = array_values($filteredOrders);
                     </div>
                 </div>
 
-                <!-- Pagination Info -->
-                <?php if (!empty($filteredOrders)): ?>
-                    <div class="mt-3 text-muted">
-                        <small>Showing <?php echo count($filteredOrders); ?> of <?php echo count($ticket_orders); ?> orders</small>
+                <!-- Payment Statistics -->
+                <div class="row mt-4">
+                    <div class="col-md-3">
+                        <div class="card text-center">
+                            <div class="card-body">
+                                <h5 class="card-title text-primary">Total Pembayaran</h5>
+                                <?php
+                                $totalQuery = "SELECT COUNT(*) as total FROM pembayaran";
+                                $totalResult = mysqli_query($conn, $totalQuery);
+                                $totalRow = mysqli_fetch_assoc($totalResult);
+                                ?>
+                                <h3 class="text-primary"><?= $totalRow['total'] ?></h3>
+                            </div>
+                        </div>
                     </div>
-                <?php endif; ?>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <!-- Image Modal -->
+    <div class="modal fade" id="imageModal" tabindex="-1" aria-labelledby="imageModalLabel" aria-hidden="true">
+        <div class="modal-dialog modal-lg modal-dialog-centered">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h5 class="modal-title" id="imageModalLabel">Bukti Pembayaran</h5>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body text-center">
+                    <img id="modalImage" class="modal-image" alt="Bukti Pembayaran">
+                </div>
             </div>
         </div>
     </div>
@@ -472,9 +257,19 @@ $filteredOrders = array_values($filteredOrders);
     <!-- Bootstrap JS -->
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
-    <!-- Optional: Auto-submit search on input -->
     <script>
-        // Auto-submit search after user stops typing (debounced)
+        // Show image modal
+        function showImageModal(imageSrc, paymentId) {
+            const modal = new bootstrap.Modal(document.getElementById('imageModal'));
+            const modalImage = document.getElementById('modalImage');
+            const modalTitle = document.getElementById('imageModalLabel');
+            
+            modalImage.src = imageSrc;
+            modalTitle.textContent = `Bukti Pembayaran - ${paymentId}`;
+            modal.show();
+        }
+
+        // Auto-submit search on input
         let searchTimeout;
         const searchInput = document.querySelector('input[name="search"]');
 
@@ -485,37 +280,8 @@ $filteredOrders = array_values($filteredOrders);
                     if (this.value.length >= 2 || this.value.length === 0) {
                         this.form.submit();
                     }
-                }, 500); // 500ms delay
+                }, 500);
             });
-        }
-
-        // Handle status update
-        function updateStatus(selectElement) {
-            const orderId = selectElement.getAttribute('data-order-id');
-            const newStatus = selectElement.value;
-
-            // Here you would typically send an AJAX request to update the database
-            // For now, we'll just show a confirmation
-            console.log(`Updating order ${orderId} to status: ${newStatus}`);
-
-            // Optional: Show a temporary success message
-            const row = selectElement.closest('tr');
-            row.style.backgroundColor = '#d4edda';
-            setTimeout(() => {
-                row.style.backgroundColor = '';
-            }, 1000);
-
-            // In a real application, you would make an AJAX call like this:
-            // fetch('update_status.php', {
-            //     method: 'POST',
-            //     headers: {
-            //         'Content-Type': 'application/json',
-            //     },
-            //     body: JSON.stringify({
-            //         order_id: orderId,
-            //         status: newStatus
-            //     })
-            // });
         }
     </script>
 </body>

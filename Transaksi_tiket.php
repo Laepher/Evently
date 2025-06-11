@@ -1,13 +1,16 @@
 <?php
 session_start();
 include 'config/config.php';
+include 'auth/auth.php'; // tambahkan auth
 
-//perubahan
+require_login(); // pastikan user login
+require_role('user'); // hanya user biasa yang boleh membeli
+
 $id_event = isset($_GET['id_event']) ? $_GET['id_event'] : 11100;
 
 $query = "SELECT e.*, t.harga_tiket FROM event e
-        JOIN tiket t ON e.id_event = t.id_event
-        WHERE e.id_event = ?";
+          JOIN tiket t ON e.id_event = t.id_event
+          WHERE e.id_event = ?";
 $stmt = $conn->prepare($query);
 $stmt->bind_param("i", $id_event);
 $stmt->execute();
@@ -19,6 +22,9 @@ $posterSrc = "data:image/jpeg;base64," . $posterData;
 
 $hargaTiket = (int)$event['harga_tiket'];
 ?>
+
+<!-- lanjutkan HTML seperti yang kamu punya -->
+
 
 <!DOCTYPE html>
 <html lang="en">

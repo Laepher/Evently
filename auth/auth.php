@@ -11,3 +11,12 @@ if (!function_exists('require_role')) {
         }
     }
 }
+
+if (!function_exists('require_login')) {
+    function require_login() {
+        if (!isset($_SESSION['id_user'])) {
+            header("Location: login.php");
+            exit;
+        }
+    }
+}

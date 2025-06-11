@@ -2,30 +2,28 @@
 require 'config/config.php';
 session_start();
 
-// Debugging connection
 if ($conn->connect_error) {
     die("Koneksi gagal: " . $conn->connect_error);
 }
 
-// Proses login
 if ($_SERVER['REQUEST_METHOD'] === 'POST') {
     $email = $_POST['email'];
     $password = $_POST['password'];
     $error = null;
 
-    // Coba cari sebagai admin
+    // Coba login sebagai admin
     $sql_admin = "SELECT id_admin, password_admin FROM admin WHERE email_admin = ?";
-    $stmt = mysqli_prepare($conn, $sql_admin);
-    mysqli_stmt_bind_param($stmt, "s", $email);
-    mysqli_stmt_execute($stmt);
-    mysqli_stmt_store_result($stmt);
+    $stmt = $conn->prepare($sql_admin);
+    $stmt->bind_param("s", $email);
+    $stmt->execute();
+    $stmt->store_result();
 
-    if (mysqli_stmt_num_rows($stmt) === 1) {
-        mysqli_stmt_bind_result($stmt, $id_admin, $hashed_password_admin);
-        mysqli_stmt_fetch($stmt);
+    if ($stmt->num_rows === 1) {
+        $stmt->bind_result($id_admin, $hashed_password_admin);
+        $stmt->fetch();
 
         if (password_verify($password, $hashed_password_admin)) {
-            $_SESSION['admin_id'] = $id_admin;
+            $_SESSION['id_admin'] = $id_admin;
             $_SESSION['role'] = 'admin';
             header("Location: dashboardadmin.php");
             exit;
@@ -33,19 +31,19 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
             $error = "Password salah.";
         }
     } else {
-        // Jika bukan admin, coba cari sebagai user
+        // Login sebagai user
         $sql_user = "SELECT id_user, password_user FROM user WHERE email_user = ?";
-        $stmt_user = mysqli_prepare($conn, $sql_user);
-        mysqli_stmt_bind_param($stmt_user, "s", $email);
-        mysqli_stmt_execute($stmt_user);
-        mysqli_stmt_store_result($stmt_user);
+        $stmt_user = $conn->prepare($sql_user);
+        $stmt_user->bind_param("s", $email);
+        $stmt_user->execute();
+        $stmt_user->store_result();
 
-        if (mysqli_stmt_num_rows($stmt_user) === 1) {
-            mysqli_stmt_bind_result($stmt_user, $id_user, $hashed_password_user);
-            mysqli_stmt_fetch($stmt_user);
+        if ($stmt_user->num_rows === 1) {
+            $stmt_user->bind_result($id_user, $hashed_password_user);
+            $stmt_user->fetch();
 
             if (password_verify($password, $hashed_password_user)) {
-                $_SESSION['user_id'] = $id_user;
+                $_SESSION['id_user'] = $id_user; // Sesuaikan agar konsisten
                 $_SESSION['role'] = 'user';
                 header("Location: homepage.php");
                 exit;
@@ -55,12 +53,14 @@ if ($_SERVER['REQUEST_METHOD'] === 'POST') {
         } else {
             $error = "Email tidak ditemukan.";
         }
-        mysqli_stmt_close($stmt_user);
+        $stmt_user->close();
     }
 
-    mysqli_stmt_close($stmt);
+    $stmt->close();
+    $conn->close();
 }
 ?>
+
 
 <!DOCTYPE html>
 <html lang="en">

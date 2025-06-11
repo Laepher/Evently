@@ -3,8 +3,8 @@ require 'auth/auth.php';
 require_role('user');
 require 'config/config.php';
 
-$id_user = $_SESSION['user_id'];
-$nama_user = 'User';
+$id_user = $_SESSION['id_user'];
+$nama_user = 'nama_user';
 
 $sql = "SELECT nama_user FROM user WHERE id_user = ?";
 $stmt = mysqli_prepare($conn, $sql);

@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 07, 2025 at 06:45 PM
+-- Generation Time: Jun 12, 2025 at 04:16 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -101,6 +101,14 @@ CREATE TABLE `pembayaran` (
   `bukti_bayar` longblob NOT NULL
 ) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
 
+--
+-- Dumping data for table `pembayaran`
+--
+
+INSERT INTO `pembayaran` (`id_pembayaran`, `id_pesanan`, `bukti_bayar`) VALUES
+(6, 1130007, 0x363834396561336261396165645f313734393637343535352e706e67),
+(7, 1130008, 0x363834396562626435356333665f313734393637343934312e706e67);
+
 -- --------------------------------------------------------
 
 --
@@ -123,7 +131,8 @@ CREATE TABLE `pesanan` (
 --
 
 INSERT INTO `pesanan` (`id_pesanan`, `id_user`, `id_tiket`, `tanggal_pesanan`, `status_pesanan`, `total_harga`, `banyak_tiket`, `metode_bayar`) VALUES
-(1130001, 1100001, 1120000, '0000-00-00', 'menunggu', 220000, 2, 'Bank Transfer');
+(1130007, 1100001, 1120003, '2025-06-12', 'dibatalkan', 160000, 4, 'E-Banking'),
+(1130008, 1100001, 1120000, '2025-06-12', 'menunggu', 110000, 1, 'E-Banking');
 
 -- --------------------------------------------------------
 
@@ -167,12 +176,7 @@ CREATE TABLE `user` (
 --
 
 INSERT INTO `user` (`id_user`, `nama_user`, `email_user`, `password_user`, `status`) VALUES
-(1100001, 'ael', 'ael@12.com', '$2y$10$.sytK7pm5h8iRxqFGsoTq.whx0Ga.xne14uieA1co.Y9xyKWitypG', 'aktif'),
-(1100002, 'ael1', 'ael@1234.com', '$2y$10$rwlmdPJr/HUI/alTRncUbuX6WCywLcJwFHuKOac8Xwg1esnvMulWC', 'aktif'),
-(1100003, 'bojo negoro', 'hitamnegro@gmail.com', '$2y$10$bnSVNsgogDjyNbo0i9QT0.zJOzeOWleAUDH331R9NSoVyULMw6CMq', 'aktif'),
-(1100004, 'amanda namira', 'ael@123.com', '$2y$10$664ac/8y9iKc2doQL61ZD.NZJw3YgCMe7K6NhStSo6FYEUJcCYTXq', 'aktif'),
-(1100005, 'amanda namira', 'amandaamira112233@gmail.com', '$2y$10$U..hoAAmKcWkSuKkfbR64O6.rCICsRaOB6nq4jPNZEHN97joUd7Fq', 'aktif'),
-(1100006, 'nopal', 'nopal123@gmail.com', '$2y$10$cNCqtbgc9m72H.H3S3xeiu/XHac6UatTXo6cOo5tN3WlJPOoYJNgy', 'aktif');
+(1100001, 'amanda namira', 'amandaamira112233@gmail.com', '$2y$10$U..hoAAmKcWkSuKkfbR64O6.rCICsRaOB6nq4jPNZEHN97joUd7Fq', 'aktif');
 
 --
 -- Indexes for dumped tables
@@ -238,19 +242,19 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `pembayaran`
 --
 ALTER TABLE `pembayaran`
-  MODIFY `id_pembayaran` int(10) NOT NULL AUTO_INCREMENT;
+  MODIFY `id_pembayaran` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=8;
 
 --
 -- AUTO_INCREMENT for table `pesanan`
 --
 ALTER TABLE `pesanan`
-  MODIFY `id_pesanan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1130002;
+  MODIFY `id_pesanan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1130009;
 
 --
 -- AUTO_INCREMENT for table `user`
 --
 ALTER TABLE `user`
-  MODIFY `id_user` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1100007;
+  MODIFY `id_user` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1100009;
 
 --
 -- Constraints for dumped tables

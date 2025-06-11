@@ -198,3 +198,49 @@ Success response: Array
     [display_status] => Confirmed
     [affected_rows] => 1
 )
+
+2025-06-12 02:35:31 - Request received
+Raw input: 
+Using POST data
+Processing - Order ID: 1130004, Status: Pending
+Converted status: menunggu
+Current order: Array
+(
+    [id_pesanan] => 1130004
+    [status_pesanan] => terbayar
+)
+
+Affected rows: 1
+Success response: Array
+(
+    [success] => 1
+    [message] => Status updated successfully
+    [order_id] => 1130004
+    [old_status] => terbayar
+    [new_status] => menunggu
+    [display_status] => Pending
+    [affected_rows] => 1
+)
+
+2025-06-12 02:48:45 - Request received
+Raw input: 
+Using POST data
+Processing - Order ID: 1130004, Status: Confirmed
+Converted status: terbayar
+Current order: Array
+(
+    [id_pesanan] => 1130004
+    [status_pesanan] => menunggu
+)
+
+Affected rows: 1
+Success response: Array
+(
+    [success] => 1
+    [message] => Status updated successfully
+    [order_id] => 1130004
+    [old_status] => menunggu
+    [new_status] => terbayar
+    [display_status] => Confirmed
+    [affected_rows] => 1
+)

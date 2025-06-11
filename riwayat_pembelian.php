@@ -5,7 +5,7 @@ require 'auth/auth.php';
 require_role('user');
 
 // Get logged-in user ID
-$user_id = $_SESSION['user_id'];
+$user_id = $_SESSION['id_user'];
 
 // Query to fetch order history with event details - Updated to show all relevant statuses
 $query = "SELECT 

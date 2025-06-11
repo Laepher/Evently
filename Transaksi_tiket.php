@@ -1,6 +1,7 @@
 <?php
 session_start();
 include 'config/config.php';
+
 //perubahan
 $id_event = isset($_GET['id_event']) ? $_GET['id_event'] : 11100;
 

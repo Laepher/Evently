@@ -80,10 +80,10 @@ function getStatusDisplayName($status)
     switch ($status_lower) {
         case 'confirmed':
         case 'terbayar':
-            return 'TERBAYAR';
+            return 'DIKONFIRMASI';
         case 'pending':
         case 'menunggu':
-            return 'MENUNGGU PEMBAYARAN';
+            return 'MENUNGGU KONFIRMASI';
         case 'cancelled':
         case 'dibatalkan':
             return 'DIBATALKAN';

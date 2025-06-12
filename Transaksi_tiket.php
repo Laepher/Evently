@@ -20,10 +20,9 @@ $event = $result->fetch_assoc();
 $posterData = base64_encode($event['poster_event']);
 $posterSrc = "data:image/jpeg;base64," . $posterData;
 
-$hargaTiket = (int)$event['harga_tiket'];
+$hargaTiket = (int)$event['harga_tiket'];   
 ?>
 
-<!-- lanjutkan HTML seperti yang kamu punya -->
 
 
 <!DOCTYPE html>

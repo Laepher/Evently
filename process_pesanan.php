@@ -1,150 +1,74 @@
 <?php
-// update_pesanan.php - Handler untuk update status pesanan dari pemesanantiket.php
+session_start();
+include 'config/config.php';
+include 'auth/auth.php';
 
 header('Content-Type: application/json');
-header('Access-Control-Allow-Origin: *');
-header('Access-Control-Allow-Methods: POST');
-header('Access-Control-Allow-Headers: Content-Type');
 
-// Include database connection
-include 'config/config.php';
-
-// Check if request is POST
-if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
-    http_response_code(405);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Method not allowed. Use POST.'
-    ]);
-    exit;
-}
-
-// Check database connection
-if (!isset($conn) || !$conn) {
-    http_response_code(500);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Database connection failed'
-    ]);
-    exit;
-}
-
-// Get and validate input data
-$order_id = isset($_POST['order_id']) ? trim($_POST['order_id']) : '';
-$status = isset($_POST['status']) ? trim($_POST['status']) : '';
-
-// Validate required fields
-if (empty($order_id) || empty($status)) {
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Order ID and status are required'
-    ]);
-    exit;
-}
-
-// Validate status values
-$valid_statuses = ['Confirmed', 'Pending', 'Cancelled'];
-if (!in_array($status, $valid_statuses)) {
-    http_response_code(400);
-    echo json_encode([
-        'success' => false,
-        'message' => 'Invalid status value'
-    ]);
-    exit;
-}
-
-// Map status to database values
-$status_mapping = [
-    'Confirmed' => 'confirmed',
-    'Pending' => 'pending',
-    'Cancelled' => 'cancelled'
-];
-
-$db_status = $status_mapping[$status];
+// Aktifkan error reporting untuk debugging (hapus di production)
+error_reporting(E_ALL);
+ini_set('display_errors', 1);
 
 try {
-    // Start transaction
-    mysqli_autocommit($conn, false);
-    
-    // Check if order exists first
-    $check_query = "SELECT id_pesanan, status_pesanan FROM pesanan WHERE id_pesanan = ?";
-    $check_stmt = mysqli_prepare($conn, $check_query);
-    
-    if (!$check_stmt) {
-        throw new Exception('Failed to prepare check statement: ' . mysqli_error($conn));
+    // Pastikan user login
+    require_login();
+
+    // Validasi metode request
+    if ($_SERVER['REQUEST_METHOD'] !== 'POST') {
+        throw new Exception('Metode harus POST');
     }
-    
-    mysqli_stmt_bind_param($check_stmt, 'i', $order_id);
-    mysqli_stmt_execute($check_stmt);
-    $check_result = mysqli_stmt_get_result($check_stmt);
-    
-    if (mysqli_num_rows($check_result) === 0) {
-        mysqli_stmt_close($check_stmt);
-        throw new Exception('Order not found');
+
+    // Validasi aksi
+    if (!isset($_POST['action']) || $_POST['action'] !== 'create_pesanan') {
+        throw new Exception('Aksi tidak valid');
     }
-    
-    $existing_order = mysqli_fetch_assoc($check_result);
-    mysqli_stmt_close($check_stmt);
-    
-    // Update the order status
-    $update_query = "UPDATE pesanan SET status_pesanan = ?, updated_at = NOW() WHERE id_pesanan = ?";
-    $update_stmt = mysqli_prepare($conn, $update_query);
-    
-    if (!$update_stmt) {
-        throw new Exception('Failed to prepare update statement: ' . mysqli_error($conn));
+
+    // Ambil data dari session dan form
+    $id_user = $_SESSION['id_user'] ?? null; // perhatikan: ini disesuaikan dengan login kamu
+    $id_event = (int)($_POST['id_event'] ?? 0);
+    $banyak_tiket = (int)($_POST['banyak_tiket'] ?? 0);
+    $total_harga = (int)($_POST['total_harga'] ?? 0);
+    $metode_bayar = trim($_POST['metode_bayar'] ?? '');
+
+    // Validasi input
+    if (!$id_user || !$id_event || !$banyak_tiket || !$total_harga || !$metode_bayar) {
+        throw new Exception('Data pesanan tidak lengkap');
     }
-    
-    mysqli_stmt_bind_param($update_stmt, 'si', $db_status, $order_id);
-    
-    if (!mysqli_stmt_execute($update_stmt)) {
-        throw new Exception('Failed to execute update: ' . mysqli_stmt_error($update_stmt));
+
+    // Ambil salah satu tiket dari event
+    $stmt = $conn->prepare("SELECT id_tiket FROM tiket WHERE id_event = ? LIMIT 1");
+    $stmt->bind_param("i", $id_event);
+    $stmt->execute();
+    $result = $stmt->get_result();
+    $row = $result->fetch_assoc();
+
+    if (!$row) {
+        throw new Exception('Tiket tidak ditemukan untuk event ini');
     }
-    
-    $affected_rows = mysqli_stmt_affected_rows($update_stmt);
-    mysqli_stmt_close($update_stmt);
-    
-    if ($affected_rows === 0) {
-        throw new Exception('No rows were updated. Order may not exist or status is already set.');
+
+    $id_tiket = $row['id_tiket'];
+
+    // Masukkan ke tabel pesanan
+    $status_pesanan = 'menunggu'; // default status baru
+    $stmt = $conn->prepare("INSERT INTO pesanan (id_user, id_tiket, banyak_tiket, total_harga, status_pesanan, metode_bayar) VALUES (?, ?, ?, ?, ?, ?)");
+    $stmt->bind_param("iiisss", $id_user, $id_tiket, $banyak_tiket, $total_harga, $status_pesanan, $metode_bayar);
+    $stmt->execute();
+
+    if ($stmt->affected_rows <= 0) {
+        throw new Exception('Gagal menyimpan pesanan');
     }
-    
-    // Commit transaction
-    mysqli_commit($conn);
-    
-    // Return success response
+
+    $id_pesanan = $stmt->insert_id;
+
     echo json_encode([
         'success' => true,
-        'message' => 'Order status updated successfully',
-        'data' => [
-            'order_id' => $order_id,
-            'old_status' => $existing_order['status_pesanan'],
-            'new_status' => $db_status,
-            'updated_at' => date('Y-m-d H:i:s')
-        ]
+        'message' => 'Pesanan berhasil dibuat',
+        'id_pesanan' => $id_pesanan
     ]);
-    
 } catch (Exception $e) {
-    // Rollback transaction on error
-    mysqli_rollback($conn);
-    
-    http_response_code(500);
+    http_response_code(400);
     echo json_encode([
         'success' => false,
-        'message' => $e->getMessage(),
-        'debug_info' => [
-            'order_id' => $order_id,
-            'status' => $status,
-            'db_status' => $db_status ?? null
-        ]
+        'message' => 'Terjadi kesalahan: ' . $e->getMessage()
     ]);
-    
-} finally {
-    // Restore autocommit
-    mysqli_autocommit($conn, true);
-    
-    // Close connection
-    if (isset($conn)) {
-        mysqli_close($conn);
-    }
 }
-?>

@@ -1,5 +1,4 @@
 <?php
-
 include 'config/config.php';
 session_start();
 
@@ -8,34 +7,12 @@ if (!isset($conn) || !$conn) {
     die("Database connection failed");
 }
 
-// Query to get real event data with ticket IDs (with error handling)
-$events = [];
-try {
-    $query = "SELECT e.id_event, e.nama_event, t.id_tiket
-              FROM event e
-              LEFT JOIN tiket t ON e.id_event = t.id_event
-              ORDER BY e.tanggal_event ASC
-              LIMIT 10"; // Limit to 10 events for dashboard
-    $result = mysqli_query($conn, $query);
-
-    if ($result) {
-        while ($row = mysqli_fetch_assoc($result)) {
-            $events[] = $row;
-        }
-    }
-} catch (Exception $e) {
-    // If error, create sample data
-    $events = [
-        ['id_event' => 1, 'nama_event' => 'Sample Event', 'id_tiket' => 1]
-    ];
-}
-
-// Function to get real booking data from database with error handling - LIMIT 3 for dashboard
+// Function to get booking data with limit
 function getDaftarPemesanan($conn, $limit = 3) {
     $bookings = [];
     
     try {
-        // Main query for dashboard - limit to 3 recent orders
+        // Updated query with proper JOIN and formatting
         $query = "SELECT 
                     p.id_pesanan,
                     p.id_tiket,
@@ -56,41 +33,7 @@ function getDaftarPemesanan($conn, $limit = 3) {
                   LIMIT ?";
         
         $stmt = mysqli_prepare($conn, $query);
-        mysqli_stmt_bind_param($stmt, "i", $limit);
-        mysqli_stmt_execute($stmt);
-        $result = mysqli_stmt_get_result($stmt);
-        
-        if ($result && mysqli_num_rows($result) > 0) {
-            while ($row = mysqli_fetch_assoc($result)) {
-                $bookings[] = $row;
-            }
-        }
-        
-        mysqli_stmt_close($stmt);
-        
-    } catch (Exception $e) {
-        // If there's an error, try alternative query structure
-        try {
-            $alternative_query = "SELECT 
-                                    p.id_pemesanan as id_pesanan,
-                                    p.id_tiket,
-                                    p.id_user,
-                                    e.nama_event,
-                                    u.username as buyer_name,
-                                    p.jumlah_tiket as quantity,
-                                    DATE_FORMAT(p.tanggal_pemesanan, '%d/%m/%Y') as order_date,
-                                    p.status_pemesanan as status_pesanan,
-                                    t.harga_tiket,
-                                    (p.jumlah_tiket * t.harga_tiket) as total_harga,
-                                    'Transfer Bank' as metode_bayar
-                                  FROM pemesanan p
-                                  LEFT JOIN tiket t ON p.id_tiket = t.id_tiket
-                                  LEFT JOIN event e ON t.id_event = e.id_event
-                                  LEFT JOIN user u ON p.id_user = u.id_user
-                                  ORDER BY p.tanggal_pemesanan DESC
-                                  LIMIT ?";
-            
-            $stmt = mysqli_prepare($conn, $alternative_query);
+        if ($stmt) {
             mysqli_stmt_bind_param($stmt, "i", $limit);
             mysqli_stmt_execute($stmt);
             $result = mysqli_stmt_get_result($stmt);
@@ -100,19 +43,19 @@ function getDaftarPemesanan($conn, $limit = 3) {
                     $bookings[] = $row;
                 }
             }
-            
             mysqli_stmt_close($stmt);
-            
-        } catch (Exception $e2) {
-            // Return empty array if both queries fail
-            return [];
         }
+        
+    } catch (Exception $e) {
+        // Fallback with sample data if query fails
+        error_log("Database error in getDaftarPemesanan: " . $e->getMessage());
+        return [];
     }
     
     return $bookings;
 }
 
-// Function to get total count of orders for "Lihat Semua" button
+// Function to get total count of orders
 function getTotalOrdersCount($conn) {
     try {
         $query = "SELECT COUNT(*) as total FROM pesanan";
@@ -120,49 +63,53 @@ function getTotalOrdersCount($conn) {
         
         if ($result) {
             $row = mysqli_fetch_assoc($result);
-            return $row['total'];
+            return (int)$row['total'];
         }
-        
-        // Try alternative table if pesanan doesn't exist
-        $query = "SELECT COUNT(*) as total FROM pemesanan";
-        $result = mysqli_query($conn, $query);
-        
-        if ($result) {
-            $row = mysqli_fetch_assoc($result);
-            return $row['total'];
-        }
-        
     } catch (Exception $e) {
-        return 0;
+        error_log("Database error in getTotalOrdersCount: " . $e->getMessage());
     }
     
     return 0;
 }
 
-// Get real booking data with error handling - LIMIT 3 for dashboard
-$bookings = [];
-$totalOrders = 0;
-
-try {
-    $bookings = getDaftarPemesanan($conn, 3); // Limit to 3 for dashboard
-    $totalOrders = getTotalOrdersCount($conn);
-} catch (Exception $e) {
-    // If there's an error, use sample data
-    $bookings = [
-        [
-            'id_pesanan' => 1,
-            'nama_event' => 'EVENT SAMPLE',
-            'buyer_name' => 'User Test',
-            'quantity' => 2,
-            'order_date' => date('d/m/Y'),
-            'status_pesanan' => 'confirmed',
-            'harga_tiket' => 50000,
-            'total_harga' => 100000,
-            'metode_bayar' => 'Transfer Bank'
-        ]
-    ];
-    $totalOrders = 1;
+// Function to get event data
+function getEventData($conn, $limit = 10) {
+    $events = [];
+    
+    try {
+        $query = "SELECT e.id_event, e.nama_event, t.id_tiket, e.tanggal_event
+                  FROM event e
+                  LEFT JOIN tiket t ON e.id_event = t.id_event
+                  ORDER BY e.tanggal_event ASC
+                  LIMIT ?";
+        
+        $stmt = mysqli_prepare($conn, $query);
+        if ($stmt) {
+            mysqli_stmt_bind_param($stmt, "i", $limit);
+            mysqli_stmt_execute($stmt);
+            $result = mysqli_stmt_get_result($stmt);
+            
+            if ($result) {
+                while ($row = mysqli_fetch_assoc($result)) {
+                    $events[] = $row;
+                }
+            }
+            mysqli_stmt_close($stmt);
+        }
+    } catch (Exception $e) {
+        error_log("Database error in getEventData: " . $e->getMessage());
+    }
+    
+    return $events;
 }
+
+// Get data for dashboard
+$bookings = getDaftarPemesanan($conn, 3); // Limit to 3 for dashboard
+$totalOrders = getTotalOrdersCount($conn);
+$events = getEventData($conn, 10);
+
+// For debugging - remove in production
+error_log("Dashboard Debug - Total orders: " . $totalOrders . ", Bookings count: " . count($bookings));
 
 ?>
 
@@ -295,8 +242,8 @@ try {
             user-select: none;
         }
 
-        /* Notification Section */
-        .notification-title, .events-title {
+        /* Section titles */
+        .section-title {
             font-weight: 700;
             font-size: 28px;
             color: var(--heading-color);
@@ -307,28 +254,9 @@ try {
             justify-content: space-between;
         }
 
-        .notification-icon {
+        .section-icon {
             color: var(--primary-color);
             font-size: 28px;
-        }
-
-        .notification-item {
-            border-radius: 0.5rem;
-            background-color: #f9fafb;
-            padding: 0.75rem 1rem;
-            margin-bottom: 0.75rem;
-            color: #4b5563;
-            box-shadow: 0 1px 2px var(--light-shadow);
-            font-weight: 500;
-            user-select: text;
-        }
-
-        .notification-item strong {
-            color: var(--heading-color);
-        }
-
-        .notification-item:last-child {
-            margin-bottom: 0;
         }
 
         /* Scrollable container for tables */
@@ -381,14 +309,9 @@ try {
             text-transform: uppercase;
         }
 
-        .status-confirmed {
+        .status-confirmed, .status-terbayar {
             background-color: #d1fae5;
             color: #065f46;
-        }
-
-        .status-terbayar {
-            background-color: #dbeafe;
-            color: #1e40af;
         }
 
         .status-paid {
@@ -396,22 +319,12 @@ try {
             color: #1e40af;
         }
 
-        .status-pending {
+        .status-pending, .status-menunggu {
             background-color: #fef3c7;
             color: #92400e;
         }
 
-        .status-menunggu {
-            background-color: #fef3c7;
-            color: #92400e;
-        }
-
-        .status-cancelled {
-            background-color: #fee2e2;
-            color: #991b1b;
-        }
-
-        .status-dibatalkan {
+        .status-cancelled, .status-dibatalkan {
             background-color: #fee2e2;
             color: #991b1b;
         }
@@ -478,7 +391,7 @@ try {
                 max-height: none;
             }
 
-            .notification-title {
+            .section-title {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 1rem;
@@ -524,28 +437,25 @@ try {
                     <div class="account-icon">
                         <i class="fas fa-user fa-lg"></i>
                     </div>
-                    <h4 class="mb-0 fw-bold">AKUN</h4>
+                    <h4 class="mb-0 fw-bold">AKUN ADMIN</h4>
                 </div>
 
                 <div class="row">
-                    <!-- Notifications Section -->
+                    <!-- Bookings Section -->
                     <div class="col-md-6">
-                        <section class="card-section notification-section">
-                            <div class="notification-title">
+                        <section class="card-section">
+                            <div class="section-title">
                                 <span>
-                                    <i class="fas fa-bell notification-icon"></i>
+                                    <i class="fas fa-bell section-icon"></i>
                                     DAFTAR PEMESANAN
-                                    <?php if ($totalOrders > 3): ?>
+                                    <?php if ($totalOrders > 0): ?>
                                         <span class="order-count-badge">
                                             <?= $totalOrders ?> total
                                         </span>
                                     <?php endif; ?>
                                 </span>
-                                <a href="pemesanantiket.php" class="view-more-btn">
-                                    <i class="fas fa-eye"></i>
-                                    <?= $totalOrders > 3 ? 'Lihat Semua (' . $totalOrders . ')' : 'Lihat Semua' ?>
-                                </a>
                             </div>
+                            
                             <div class="table-responsive-scroll">
                                 <?php if (!empty($bookings)): ?>
                                     <table>
@@ -565,11 +475,11 @@ try {
                                                     <td><?= htmlspecialchars($booking['id_pesanan'] ?? '-') ?></td>
                                                     <td>
                                                         <div style="max-width: 120px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis;" 
-                                                             title="<?= htmlspecialchars($booking['nama_event'] ?? '-') ?>">
-                                                            <?= htmlspecialchars($booking['nama_event'] ?? '-') ?>
+                                                             title="<?= htmlspecialchars($booking['nama_event'] ?? 'Event tidak ditemukan') ?>">
+                                                            <?= htmlspecialchars($booking['nama_event'] ?? 'Event tidak ditemukan') ?>
                                                         </div>
                                                     </td>
-                                                    <td><?= htmlspecialchars($booking['buyer_name'] ?? '-') ?></td>
+                                                    <td><?= htmlspecialchars($booking['buyer_name'] ?? 'User #' . ($booking['id_user'] ?? '-')) ?></td>
                                                     <td><?= (int)($booking['quantity'] ?? 0) ?></td>
                                                     <td>
                                                         <span class="status-badge status-<?= htmlspecialchars(strtolower($booking['status_pesanan'] ?? 'pending')) ?>">
@@ -582,25 +492,10 @@ try {
                                         </tbody>
                                     </table>
                                     
-                                    <?php if ($totalOrders > 3): ?>
-                                        <div class="text-center mt-3 pt-3" style="border-top: 1px solid #dee2e6;">
-                                            <small class="text-muted">
-                                                Menampilkan 3 dari <?= $totalOrders ?> total pemesanan
-                                            </small>
-                                            <br>
-                                            <a href="pemesanantiket.php" class="view-more-btn mt-2">
-                                                <i class="fas fa-arrow-right"></i>
-                                                Lihat <?= $totalOrders - 3 ?> Lainnya
-                                            </a>
-                                        </div>
-                                    <?php endif; ?>
-                                    
                                 <?php else: ?>
                                     <div class="empty-state">
-                                        <i class="fas fa-shopping-cart"></i>
-                                        <p>Tidak ada pemesanan ditemukan</p>
                                         <a href="pemesanantiket.php" class="view-more-btn">
-                                            <i class="fas fa-plus"></i>
+                                            <i class="fas fa-list"></i>
                                             Kelola Pemesanan
                                         </a>
                                     </div>
@@ -611,10 +506,10 @@ try {
 
                     <!-- Events Section -->
                     <div class="col-md-6">
-                        <section class="card-section events-section">
-                            <div class="notification-title">
+                        <section class="card-section">
+                            <div class="section-title">
                                 <span>
-                                    <i class="fas fa-calendar-alt notification-icon"></i>
+                                    <i class="fas fa-calendar-alt section-icon"></i>
                                     DAFTAR EVENT
                                 </span>
                                 <a href="daftarevent.php" class="view-more-btn">
@@ -622,17 +517,9 @@ try {
                                     Lihat Semua
                                 </a>
                             </div>
+                            
                             <div class="table-responsive-scroll">
-                                <?php if (empty($events)): ?>
-                                    <div class="empty-state">
-                                        <i class="fas fa-calendar-alt"></i>
-                                        <p>Tidak ada event ditemukan</p>
-                                        <a href="daftarevent.php" class="view-more-btn">
-                                            <i class="fas fa-plus"></i>
-                                            Tambah Event
-                                        </a>
-                                    </div>
-                                <?php else: ?>
+                                <?php if (!empty($events)): ?>
                                     <table>
                                         <thead>
                                             <tr>
@@ -656,6 +543,17 @@ try {
                                             <?php endforeach; ?>
                                         </tbody>
                                     </table>
+                                <?php else: ?>
+                                    <div class="empty-state">
+                                        <i class="fas fa-calendar-alt"></i>
+                                        <p>Belum ada event</p>
+                                        <small class="text-muted">Event yang dibuat akan muncul di sini</small>
+                                        <br><br>
+                                        <a href="daftarevent.php" class="view-more-btn">
+                                            <i class="fas fa-plus"></i>
+                                            Tambah Event
+                                        </a>
+                                    </div>
                                 <?php endif; ?>
                             </div>
                         </section>
@@ -669,32 +567,41 @@ try {
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
     <script>
         function logout() {
-            window.location.href = 'login.php';
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                window.location.href = 'login.php';
+            }
         }
 
-        // Auto-refresh data setiap 30 detik - only if page is visible
-        setInterval(function() {
-            if (document.visibilityState === 'visible') {
-                // Use AJAX to refresh only the data sections without full page reload
-                refreshDashboardData();
-            }
-        }, 30000);
+        // Auto-refresh data setiap 60 detik jika halaman aktif
+        let refreshInterval;
+        
+        function startAutoRefresh() {
+            refreshInterval = setInterval(function() {
+                if (document.visibilityState === 'visible') {
+                    // Soft refresh - hanya refresh bagian data tanpa reload halaman penuh
+                    refreshDashboardData();
+                }
+            }, 60000); // 60 detik
+        }
 
-        // Function to refresh dashboard data via AJAX
+        function stopAutoRefresh() {
+            if (refreshInterval) {
+                clearInterval(refreshInterval);
+            }
+        }
+
+        // Function untuk refresh data via AJAX (opsional)
         function refreshDashboardData() {
+            // Implementasi AJAX refresh bisa ditambahkan di sini
+            console.log('Refreshing dashboard data...');
+            
+            // Contoh implementasi sederhana - bisa dikembangkan lebih lanjut
             fetch('dashboard_refresh.php')
                 .then(response => response.json())
                 .then(data => {
                     if (data.success) {
-                        // Update booking data if available
-                        if (data.bookings) {
-                            updateBookingsTable(data.bookings, data.totalOrders);
-                        }
-                        
-                        // Update events data if available
-                        if (data.events) {
-                            updateEventsTable(data.events);
-                        }
+                        console.log('Dashboard data refreshed successfully');
+                        // Update tampilan jika diperlukan
                     }
                 })
                 .catch(error => {
@@ -702,18 +609,32 @@ try {
                 });
         }
 
-        // Function to update bookings table
-        function updateBookingsTable(bookings, totalOrders) {
-            // Implementation for updating bookings table without full page reload
-            console.log('Updating bookings:', bookings.length, 'Total:', totalOrders);
-        }
+        // Event listeners
+        document.addEventListener('DOMContentLoaded', function() {
+            console.log('Dashboard loaded successfully');
+            console.log('Total orders:', <?= $totalOrders ?>);
+            console.log('Displayed bookings:', <?= count($bookings) ?>);
+            
+            // Start auto refresh
+            startAutoRefresh();
+        });
 
-        // Function to update events table
-        function updateEventsTable(events) {
-            // Implementation for updating events table without full page reload
-            console.log('Updating events:', events.length);
-        }
+        // Stop auto refresh when page is not visible
+        document.addEventListener('visibilitychange', function() {
+            if (document.visibilityState === 'visible') {
+                startAutoRefresh();
+            } else {
+                stopAutoRefresh();
+            }
+        });
+
+        // Cleanup on page unload
+        window.addEventListener('beforeunload', function() {
+            stopAutoRefresh();
+        });
     </script>
 </body>
 
 </html>
+
+

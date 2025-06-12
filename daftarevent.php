@@ -508,7 +508,7 @@ if (isset($_GET['delete']) && !empty($_GET['delete'])) {
         <div class="container-fluid px-3">
             <span class="navbar-brand fw-bold fs-5 mb-0">EVENTLY</span>
             <div class="d-flex align-items-center">
-                <a href="dashboardadmin.php" class="admin-username">ADMIN#1</a>
+                <a href="dashboardadmin.php" class="admin-username">DASHBOARD</a>
                 <a href="#" class="logout-link">
                     LOG OUT
                 </a>

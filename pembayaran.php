@@ -89,9 +89,7 @@ $paymentResult = mysqli_query($conn, $query);
             <span class="navbar-brand fw-bold fs-5 mb-0">EVENTLY</span>
             <div class="d-flex align-items-center">
                 <a href="dashboardadmin.php" class="admin-username">DASHBOARD</a>
-                <a href="#" class="logout-link">
-                    LOG OUT
-                </a>
+                <a href="#" class="logout-link" onclick="logout()">LOG OUT</a>
             </div>
         </div>
     </nav>
@@ -258,6 +256,11 @@ $paymentResult = mysqli_query($conn, $query);
     <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.3.0/dist/js/bootstrap.bundle.min.js"></script>
 
     <script>
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                window.location.href = 'login.php';
+            }
+        }
         // Show image modal
         function showImageModal(imageSrc, paymentId) {
             const modal = new bootstrap.Modal(document.getElementById('imageModal'));

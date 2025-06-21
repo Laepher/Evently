@@ -189,9 +189,7 @@ $conn->close();
             <span class="navbar-brand fw-bold fs-5 mb-0">EVENTLY</span>
             <div class="d-flex align-items-center">
                 <a href="dashboardadmin.php" class="admin-username">DASHBOARD</a>
-                <a href="#" class="logout-link">
-                    LOG OUT
-                </a>
+                <a href="#" class="logout-link" onclick="logout()">LOG OUT</a>
             </div>
         </div>
     </nav>
@@ -307,8 +305,12 @@ $conn->close();
     <!-- JQuery JS -->
     <script src="https://code.jquery.com/jquery-3.6.0.min.js"></script>
 
-    <!-- Optional: Auto-submit search on input -->
     <script>
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                window.location.href = 'login.php';
+            }
+        }
         let searchTimeout;
         const searchInput = document.querySelector('input[name="search"]');
 

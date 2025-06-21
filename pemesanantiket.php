@@ -120,9 +120,7 @@ function formatDate($date)
             <span class="navbar-brand fw-bold fs-5 mb-0">EVENTLY</span>
             <div class="d-flex align-items-center">
                 <a href="dashboardadmin.php" class="admin-username">DASHBOARD</a>
-                <a href="#" class="logout-link">
-                    LOG OUT
-                </a>
+                <a href="#" class="logout-link" onclick="logout()">LOG OUT</a>
             </div>
         </div>
     </nav>
@@ -292,9 +290,11 @@ function formatDate($date)
 
     <!-- Status Update JavaScript -->
     <script>
-        // ===== FIXED JavaScript untuk pemesanantiket.php =====
-
-        // Show/hide loading overlay
+        function logout() {
+            if (confirm('Apakah Anda yakin ingin logout?')) {
+                window.location.href = 'login.php';
+            }
+        }
         function showLoading() {
             document.getElementById('loadingOverlay').style.display = 'flex';
         }

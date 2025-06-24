@@ -65,8 +65,69 @@ $poster_base64 = base64_encode($event['poster_event']);
             <div class="detail-item">
                 <i class="fa-solid fa-calendar-days"></i>
                 <span><?= $tanggal_mulai ?><?php if ($tanggal_mulai != $tanggal_selesai) echo " - $tanggal_selesai"; ?></span>
+
+                <!-- ⭐⭐ Tampilkan rata-rata rating ⭐⭐ -->
+                <?php
+                $sql_avg_rating = "SELECT AVG(rating_value) AS avg_rating, COUNT(*) AS jumlah_rating 
+                       FROM rating 
+                       INNER JOIN tiket ON rating.id_tiket = tiket.id_tiket
+                       WHERE tiket.id_event = ?";
+                $stmt_avg = $conn->prepare($sql_avg_rating);
+                $stmt_avg->bind_param("s", $id_event);
+                $stmt_avg->execute();
+                $result_avg = $stmt_avg->get_result();
+                $row_avg = $result_avg->fetch_assoc();
+
+                if ($row_avg['jumlah_rating'] > 0):
+                    $avg_rating = number_format($row_avg['avg_rating'], 1);
+                ?>
+                    <div class="detail-item">
+                        <i class="fas fa-star text-warning"></i>
+                        <span><?= $avg_rating ?>/5 (<?= $row_avg['jumlah_rating'] ?> rating)</span>
+                    </div>
+                <?php else: ?>
+                    <div class="detail-item">
+                        <i class="fas fa-star text-warning"></i>
+                        <span>Belum ada rating</span>
+                    </div>
+                <?php endif; ?>
+                <?php $stmt_avg->close(); ?>
             </div>
+
+            <!-- ⭐⭐ Form untuk memberikan rating ⭐⭐ -->
+            <?php if (isset($_SESSION['id_user'])): ?>
+                <div style="margin-top: 15px;">
+                    <form action="beri_rating.php" method="POST">
+                        <input type="hidden" name="id_tiket" value="<?php
+                                                                    // Ambil 1 id_tiket event ini (boleh tiket reguler misalnya)
+                                                                    $sql_tiket = "SELECT id_tiket FROM tiket WHERE id_event = ? LIMIT 1";
+                                                                    $stmt_tiket = $conn->prepare($sql_tiket);
+                                                                    $stmt_tiket->bind_param("s", $id_event);
+                                                                    $stmt_tiket->execute();
+                                                                    $result_tiket = $stmt_tiket->get_result();
+                                                                    $row_tiket = $result_tiket->fetch_assoc();
+                                                                    echo $row_tiket['id_tiket'] ?? 0;
+                                                                    $stmt_tiket->close();
+                                                                    ?>">
+                        <input type="hidden" name="id_event" value="<?= htmlspecialchars($id_event) ?>">
+
+                        <label for="rating_value">Beri rating (1-5): </label>
+                        <select name="rating_value" required>
+                            <option value="">Pilih rating</option>
+                            <?php for ($i = 1; $i <= 5; $i++): ?>
+                                <option value="<?= $i ?>"><?= $i ?></option>
+                            <?php endfor; ?>
+                        </select>
+                        <button type="submit" style="margin-left: 5px;">Submit Rating</button>
+                    </form>
+                </div>
+            <?php else: ?>
+                <div style="margin-top: 15px; color: #888;">
+                    <em>Login untuk memberikan rating.</em>
+                </div>
+            <?php endif; ?>
         </div>
+    </div>
     </div>
 
     <div class="content-section">

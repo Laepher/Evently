@@ -3,7 +3,7 @@
 -- https://www.phpmyadmin.net/
 --
 -- Host: 127.0.0.1
--- Generation Time: Jun 24, 2025 at 12:36 PM
+-- Generation Time: Jun 25, 2025 at 08:19 AM
 -- Server version: 10.4.32-MariaDB
 -- PHP Version: 8.2.12
 
@@ -115,10 +115,7 @@ INSERT INTO `pembayaran` (`id_pembayaran`, `id_pesanan`, `bukti_bayar`) VALUES
 (6, 1130007, 0x363834396561336261396165645f313734393637343535352e706e67),
 (7, 1130008, 0x363834396562626435356333665f313734393637343934312e706e67),
 (8, 1130009, 0x363834396634646539623761365f313734393637373237382e706e67),
-(9, 1130010, 0x363834396661383430373730315f313734393637383732342e706e67),
-(10, 1130011, 0x363834613939356165363039345f313734393731393338362e706e67),
-(11, 1130012, 0x363834613965326538626434355f313734393732303632322e6a706567),
-(12, 1130013, 0x363834613965623839343434375f313734393732303736302e6a7067);
+(9, 1130010, 0x363834396661383430373730315f313734393637383732342e706e67);
 
 -- --------------------------------------------------------
 
@@ -145,34 +142,7 @@ INSERT INTO `pesanan` (`id_pesanan`, `id_user`, `id_tiket`, `tanggal_pesanan`, `
 (1130007, 1100001, 1120003, '2025-06-12', 'dibatalkan', 160000, 4, 'E-Banking'),
 (1130008, 1100001, 1120000, '2025-06-12', 'menunggu', 110000, 1, 'E-Banking'),
 (1130009, 1100001, 1120003, '2025-06-12', 'menunggu', 40000, 1, 'E-money'),
-(1130010, 1100002, 1120001, '0000-00-00', 'menunggu', 120000, 2, 'E-money'),
-(1130011, 1100002, 1120000, '0000-00-00', 'terbayar', 110000, 1, 'E-Banking'),
-(1130012, 1100002, 1120003, '0000-00-00', 'terbayar', 120000, 3, ''),
-(1130013, 1100003, 1120004, '0000-00-00', 'dibatalkan', 30000, 3, 'E-money');
-
--- --------------------------------------------------------
-
---
--- Table structure for table `rating`
---
-
-CREATE TABLE `rating` (
-  `id_rating` int(11) NOT NULL,
-  `id_tiket` int(11) NOT NULL,
-  `id_user` int(11) NOT NULL,
-  `rating_value` int(11) DEFAULT NULL CHECK (`rating_value` >= 1 and `rating_value` <= 5),
-  `review` text DEFAULT NULL,
-  `tanggal_rating` timestamp NOT NULL DEFAULT current_timestamp()
-) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
-
---
--- Dumping data for table `rating`
---
-
-INSERT INTO `rating` (`id_rating`, `id_tiket`, `id_user`, `rating_value`, `review`, `tanggal_rating`) VALUES
-(12000, 1120000, 1100002, 5, NULL, '2025-06-24 10:28:27'),
-(12001, 1120003, 1100002, 5, NULL, '2025-06-24 10:30:16'),
-(12002, 1120003, 1100004, 4, NULL, '2025-06-24 10:31:26');
+(1130010, 1100002, 1120001, '0000-00-00', 'menunggu', 120000, 2, 'E-money');
 
 -- --------------------------------------------------------
 
@@ -197,6 +167,28 @@ INSERT INTO `tiket` (`id_tiket`, `id_event`, `harga_tiket`, `stok_tiket`) VALUES
 (1120002, 1110002, 200000, 100),
 (1120003, 1110003, 40000, 10),
 (1120004, 1110004, 10000, 5);
+
+-- --------------------------------------------------------
+
+--
+-- Table structure for table `ulasan`
+--
+
+CREATE TABLE `ulasan` (
+  `id_ulasan` int(11) NOT NULL,
+  `id_tiket` int(11) NOT NULL,
+  `id_user` int(11) NOT NULL,
+  `nilai_ulasan` int(11) DEFAULT NULL,
+  `tanggal_ulasan` timestamp NOT NULL DEFAULT current_timestamp()
+) ENGINE=InnoDB DEFAULT CHARSET=utf8mb4 COLLATE=utf8mb4_general_ci;
+
+--
+-- Dumping data for table `ulasan`
+--
+
+INSERT INTO `ulasan` (`id_ulasan`, `id_tiket`, `id_user`, `nilai_ulasan`, `tanggal_ulasan`) VALUES
+(12000, 1120000, 1100002, 5, '2025-06-24 10:28:27'),
+(12001, 1120003, 1100002, 5, '2025-06-24 10:30:16');
 
 -- --------------------------------------------------------
 
@@ -260,19 +252,19 @@ ALTER TABLE `pesanan`
   ADD KEY `f_tiket` (`id_tiket`);
 
 --
--- Indexes for table `rating`
---
-ALTER TABLE `rating`
-  ADD PRIMARY KEY (`id_rating`),
-  ADD UNIQUE KEY `unique_user_ticket` (`id_user`,`id_tiket`),
-  ADD KEY `id_tiket` (`id_tiket`);
-
---
 -- Indexes for table `tiket`
 --
 ALTER TABLE `tiket`
   ADD PRIMARY KEY (`id_tiket`),
   ADD KEY `f_event` (`id_event`);
+
+--
+-- Indexes for table `ulasan`
+--
+ALTER TABLE `ulasan`
+  ADD PRIMARY KEY (`id_ulasan`),
+  ADD UNIQUE KEY `unique_user_ticket` (`id_user`,`id_tiket`),
+  ADD KEY `id_tiket` (`id_tiket`);
 
 --
 -- Indexes for table `user`
@@ -294,13 +286,13 @@ ALTER TABLE `admin`
 -- AUTO_INCREMENT for table `pembayaran`
 --
 ALTER TABLE `pembayaran`
-  MODIFY `id_pembayaran` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=13;
+  MODIFY `id_pembayaran` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=15;
 
 --
 -- AUTO_INCREMENT for table `pesanan`
 --
 ALTER TABLE `pesanan`
-  MODIFY `id_pesanan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1130014;
+  MODIFY `id_pesanan` int(10) NOT NULL AUTO_INCREMENT, AUTO_INCREMENT=1130016;
 
 --
 -- AUTO_INCREMENT for table `user`
@@ -326,17 +318,17 @@ ALTER TABLE `pesanan`
   ADD CONSTRAINT `pesanan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE ON UPDATE CASCADE;
 
 --
--- Constraints for table `rating`
---
-ALTER TABLE `rating`
-  ADD CONSTRAINT `rating_ibfk_1` FOREIGN KEY (`id_tiket`) REFERENCES `tiket` (`id_tiket`) ON DELETE CASCADE,
-  ADD CONSTRAINT `rating_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE;
-
---
 -- Constraints for table `tiket`
 --
 ALTER TABLE `tiket`
   ADD CONSTRAINT `tiket_ibfk_1` FOREIGN KEY (`id_event`) REFERENCES `event` (`id_event`) ON DELETE CASCADE ON UPDATE CASCADE;
+
+--
+-- Constraints for table `ulasan`
+--
+ALTER TABLE `ulasan`
+  ADD CONSTRAINT `ulasan_ibfk_1` FOREIGN KEY (`id_tiket`) REFERENCES `tiket` (`id_tiket`) ON DELETE CASCADE,
+  ADD CONSTRAINT `ulasan_ibfk_2` FOREIGN KEY (`id_user`) REFERENCES `user` (`id_user`) ON DELETE CASCADE;
 COMMIT;
 
 /*!40101 SET CHARACTER_SET_CLIENT=@OLD_CHARACTER_SET_CLIENT */;

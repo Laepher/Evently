@@ -33,15 +33,15 @@ $poster_base64 = base64_encode($event['poster_event']);
 
 // Cek apakah user sudah membeli tiket dengan status confirmed
 $user_has_purchased = false;
-$user_current_rating = null;
+$user_current_ulasan = null;
 if (isset($_SESSION['id_user'])) {
     $id_user = $_SESSION['id_user'];
     
     // Cek pembelian dengan status confirmed
-    $sql_purchase = "SELECT p.id_pesanan, t.id_tiket, r.rating_value
+    $sql_purchase = "SELECT p.id_pesanan, t.id_tiket, u.nilai_ulasan
                      FROM pesanan p 
                      JOIN tiket t ON p.id_tiket = t.id_tiket 
-                     LEFT JOIN rating r ON (t.id_tiket = r.id_tiket AND r.id_user = ?)
+                     LEFT JOIN ulasan u ON (t.id_tiket = u.id_tiket AND u.id_user = ?)
                      WHERE p.id_user = ? AND t.id_event = ? 
                      AND (p.status_pesanan = 'confirmed' OR p.status_pesanan = 'terbayar')
                      LIMIT 1";
@@ -54,7 +54,7 @@ if (isset($_SESSION['id_user'])) {
     if ($result_purchase->num_rows > 0) {
         $user_has_purchased = true;
         $purchase_data = $result_purchase->fetch_assoc();
-        $user_current_rating = $purchase_data['rating_value'];
+        $user_current_ulasan = $purchase_data['nilai_ulasan'];
     }
     $stmt_purchase->close();
 }
@@ -71,7 +71,7 @@ if (isset($_SESSION['id_user'])) {
     <link rel="stylesheet" href="style/main.css" />
     <link rel="stylesheet" href="https://cdnjs.cloudflare.com/ajax/libs/font-awesome/6.4.2/css/all.min.css" />
     <style>
-        .rating-section {
+        .ulasan-section {
             margin: 15px 0;
             padding: 20px;
             background: #f8f9fa;
@@ -80,7 +80,7 @@ if (isset($_SESSION['id_user'])) {
             color: #333;
         }
         
-        .rating-section h4 {
+        .ulasan-section h4 {
             margin: 0 0 15px 0;
             font-size: 1.1em;
             font-weight: 600;
@@ -90,18 +90,18 @@ if (isset($_SESSION['id_user'])) {
             gap: 8px;
         }
         
-        .rating-section h4 i {
+        .ulasan-section h4 i {
             color: #ffc107;
         }
         
-        .rating-form {
+        .ulasan-form {
             display: flex;
             align-items: center;
             gap: 15px;
             flex-wrap: wrap;
         }
         
-        .star-rating {
+        .star-ulasan {
             display: flex;
             gap: 5px;
         }
@@ -118,7 +118,7 @@ if (isset($_SESSION['id_user'])) {
             color: #ffc107;
         }
         
-        .rating-submit {
+        .ulasan-submit {
             background-color: #007bff;
             color: white;
             border: none;
@@ -129,38 +129,38 @@ if (isset($_SESSION['id_user'])) {
             transition: background-color 0.2s ease;
         }
         
-        .rating-submit:hover:not(:disabled) {
+        .ulasan-submit:hover:not(:disabled) {
             background-color: #0056b3;
         }
         
-        .rating-submit:disabled {
+        .ulasan-submit:disabled {
             background-color: #6c757d;
             cursor: not-allowed;
         }
         
-        .current-rating {
+        .current-ulasan {
             color: #28a745;
             font-weight: 600;
             font-size: 14px;
         }
         
-        .rating-info {
+        .ulasan-info {
             color: #6c757d;
             font-size: 14px;
             margin: 8px 0;
         }
         
-        .rating-info a {
+        .ulasan-info a {
             color: #007bff;
             text-decoration: none;
         }
         
-        .rating-info a:hover {
+        .ulasan-info a:hover {
             text-decoration: underline;
         }
         
-        /* Average Rating Styles */
-        .average-rating {
+        /* Average Ulasan Styles */
+        .average-ulasan {
             display: flex;
             align-items: center;
             gap: 10px;
@@ -171,26 +171,26 @@ if (isset($_SESSION['id_user'])) {
             margin: 8px 0;
         }
         
-        .average-rating i.fas.fa-star.text-warning {
+        .average-ulasan i.fas.fa-star.text-warning {
             color: #ffc107 !important;
         }
         
-        .rating-score {
+        .ulasan-score {
             font-weight: 600;
             color: #495057;
         }
         
-        .rating-stars i {
+        .ulasan-stars i {
             color: #ffc107;
             font-size: 14px;
         }
         
-        .rating-count {
+        .ulasan-count {
             color: #6c757d;
             font-size: 13px;
         }
         
-        .no-rating {
+        .no-ulasan {
             background: #fff;
             padding: 12px 15px;
             border-radius: 8px;
@@ -202,19 +202,19 @@ if (isset($_SESSION['id_user'])) {
             gap: 8px;
         }
         
-        .no-rating i {
+        .no-ulasan i {
             color: #ffc107;
         }
         
         /* Responsive Design */
         @media (max-width: 768px) {
-            .rating-form {
+            .ulasan-form {
                 flex-direction: column;
                 align-items: flex-start;
                 gap: 10px;
             }
             
-            .star-rating {
+            .star-ulasan {
                 align-self: center;
             }
         }
@@ -245,28 +245,28 @@ if (isset($_SESSION['id_user'])) {
                 <span><?= $tanggal_mulai ?><?php if ($tanggal_mulai != $tanggal_selesai) echo " - $tanggal_selesai"; ?></span>
             </div>
 
-            <!-- ⭐⭐ Tampilkan rata-rata rating ⭐⭐ -->
+            <!-- ⭐⭐ Tampilkan rata-rata ulasan ⭐⭐ -->
             <?php
-            $sql_avg_rating = "SELECT AVG(rating_value) AS avg_rating, COUNT(*) AS jumlah_rating 
-                   FROM rating 
-                   INNER JOIN tiket ON rating.id_tiket = tiket.id_tiket
+            $sql_avg_ulasan = "SELECT AVG(nilai_ulasan) AS avg_ulasan, COUNT(*) AS jumlah_ulasan 
+                   FROM ulasan 
+                   INNER JOIN tiket ON ulasan.id_tiket = tiket.id_tiket
                    WHERE tiket.id_event = ?";
-            $stmt_avg = $conn->prepare($sql_avg_rating);
+            $stmt_avg = $conn->prepare($sql_avg_ulasan);
             $stmt_avg->bind_param("s", $id_event);
             $stmt_avg->execute();
             $result_avg = $stmt_avg->get_result();
             $row_avg = $result_avg->fetch_assoc();
 
-            if ($row_avg['jumlah_rating'] > 0):
-                $avg_rating = number_format($row_avg['avg_rating'], 1);
-                $full_stars = floor($row_avg['avg_rating']);
-                $half_star = ($row_avg['avg_rating'] - $full_stars) >= 0.5;
+            if ($row_avg['jumlah_ulasan'] > 0):
+                $avg_ulasan = number_format($row_avg['avg_ulasan'], 1);
+                $full_stars = floor($row_avg['avg_ulasan']);
+                $half_star = ($row_avg['avg_ulasan'] - $full_stars) >= 0.5;
             ?>
                 <div class="detail-item">
-                    <div class="average-rating">
+                    <div class="average-ulasan">
                         <i class="fas fa-star text-warning"></i>
-                        <span class="rating-score"><?= $avg_rating ?>/5</span>
-                        <div class="rating-stars">
+                        <span class="ulasan-score"><?= $avg_ulasan ?>/5</span>
+                        <div class="ulasan-stars">
                             <?php for ($i = 1; $i <= 5; $i++): ?>
                                 <?php if ($i <= $full_stars): ?>
                                     <i class="fas fa-star"></i>
@@ -277,74 +277,74 @@ if (isset($_SESSION['id_user'])) {
                                 <?php endif; ?>
                             <?php endfor; ?>
                         </div>
-                        <span class="rating-count"><?= $row_avg['jumlah_rating'] ?> rating</span>
+                        <span class="ulasan-count"><?= $row_avg['jumlah_ulasan'] ?> ulasan</span>
                     </div>
                 </div>
             <?php else: ?>
                 <div class="detail-item">
-                    <div class="no-rating">
+                    <div class="no-ulasan">
                         <i class="fas fa-star"></i>
-                        <span>Belum ada rating untuk event ini</span>
+                        <span>Belum ada ulasan untuk event ini</span>
                     </div>
                 </div>
             <?php endif; ?>
             <?php $stmt_avg->close(); ?>
 
-            <!-- ⭐⭐ Form untuk memberikan rating ⭐⭐ -->
+            <!-- ⭐⭐ Form untuk memberikan ulasan ⭐⭐ -->
             <?php if (isset($_SESSION['id_user'])): ?>
                 <?php if ($user_has_purchased): ?>
-                    <div class="rating-section">
-                        <h4><i class="fas fa-star"></i> Berikan Rating Event</h4>
+                    <div class="ulasan-section">
+                        <h4><i class="fas fa-star"></i> Berikan Ulasan Event</h4>
                         
-                        <?php if ($user_current_rating): ?>
-                            <div class="current-rating">
-                                Rating Anda saat ini: <?= $user_current_rating ?>/5 bintang
+                        <?php if ($user_current_ulasan): ?>
+                            <div class="current-ulasan">
+                                Ulasan Anda saat ini: <?= $user_current_ulasan ?>/5 bintang
                             </div>
-                            <p class="rating-info">
+                            <p class="ulasan-info">
                                 <i class="fas fa-info-circle"></i>
-                                Klik bintang untuk mengubah rating Anda
+                                Klik bintang untuk mengubah ulasan Anda
                             </p>
                         <?php else: ?>
-                            <p class="rating-info">
+                            <p class="ulasan-info">
                                 <i class="fas fa-thumbs-up"></i>
                                 Bagaimana pengalaman Anda dengan event ini?
                             </p>
                         <?php endif; ?>
                         
-                        <form action="beri_rating.php" method="POST" id="ratingForm">
+                        <form action="beri_ulasan.php" method="POST" id="ulasanForm">
                             <input type="hidden" name="id_event" value="<?= htmlspecialchars($id_event) ?>">
-                            <input type="hidden" name="rating_value" id="selectedRating" value="<?= $user_current_rating ?? '' ?>">
+                            <input type="hidden" name="nilai_ulasan" id="selectedUlasan" value="<?= $user_current_ulasan ?? '' ?>">
                             
-                            <div class="rating-form">
-                                <div class="star-rating" id="starRating">
+                            <div class="ulasan-form">
+                                <div class="star-ulasan" id="starUlasan">
                                     <?php for ($i = 1; $i <= 5; $i++): ?>
-                                        <span class="star <?= ($user_current_rating && $i <= $user_current_rating) ? 'active' : '' ?>" 
-                                              data-rating="<?= $i ?>">★</span>
+                                        <span class="star <?= ($user_current_ulasan && $i <= $user_current_ulasan) ? 'active' : '' ?>" 
+                                              data-ulasan="<?= $i ?>">★</span>
                                     <?php endfor; ?>
                                 </div>
-                                <button type="submit" class="rating-submit" id="submitBtn" 
-                                        <?= !$user_current_rating ? 'disabled' : '' ?>>
+                                <button type="submit" class="ulasan-submit" id="submitBtn" 
+                                        <?= !$user_current_ulasan ? 'disabled' : '' ?>>
                                     <i class="fas fa-paper-plane"></i>
-                                    <?= $user_current_rating ? 'Update Rating' : 'Kirim Rating' ?>
+                                    <?= $user_current_ulasan ? 'Update Ulasan' : 'Kirim Ulasan' ?>
                                 </button>
                             </div>
                         </form>
                     </div>
                 <?php else: ?>
-                    <div class="rating-section">
-                        <h4><i class="fas fa-lock"></i> Rating Terkunci</h4>
-                        <div class="rating-info">
+                    <div class="ulasan-section">
+                        <h4><i class="fas fa-lock"></i> Ulasan Terkunci</h4>
+                        <div class="ulasan-info">
                             <i class="fas fa-shopping-cart"></i> 
-                            Anda dapat memberikan rating setelah membeli tiket dan pembayaran dikonfirmasi.
+                            Anda dapat memberikan ulasan setelah membeli tiket dan pembayaran dikonfirmasi.
                         </div>
                     </div>
                 <?php endif; ?>
             <?php else: ?>
-                <div class="rating-section">
+                <div class="ulasan-section">
                     <h4><i class="fas fa-sign-in-alt"></i> Login Diperlukan</h4>
-                    <div class="rating-info">
+                    <div class="ulasan-info">
                         <i class="fas fa-user"></i> 
-                        <a href="login.php">Login terlebih dahulu</a> untuk dapat memberikan rating event ini.
+                        <a href="login.php">Login terlebih dahulu</a> untuk dapat memberikan ulasan event ini.
                     </div>
                 </div>
             <?php endif; ?>
@@ -473,51 +473,53 @@ if (isset($_SESSION['id_user'])) {
             document.getElementById("posterModal").style.display = "none";
         }
 
-        // Enhanced Rating functionality
+        // Enhanced Ulasan functionality
         document.addEventListener('DOMContentLoaded', function() {
             const stars = document.querySelectorAll('.star');
-            const selectedRatingInput = document.getElementById('selectedRating');
+            const selectedUlasanInput = document.getElementById('selectedUlasan');
             const submitBtn = document.getElementById('submitBtn');
-            const ratingSection = document.querySelector('.rating-section');
-            let currentRating = parseInt(selectedRatingInput.value) || 0;
+            const ulasanSection = document.querySelector('.ulasan-section');
+            let currentUlasan = parseInt(selectedUlasanInput.value) || 0;
 
             stars.forEach(star => {
                 star.addEventListener('click', function() {
-                    const rating = parseInt(this.dataset.rating);
-                    currentRating = rating;
-                    selectedRatingInput.value = rating;
+                    const ulasan = parseInt(this.dataset.ulasan);
+                    currentUlasan = ulasan;
+                    selectedUlasanInput.value = ulasan;
                     
                     // Update visual feedback
-                    updateStars(rating);
+                    updateStars(ulasan);
                     
                     // Enable submit button
                     submitBtn.disabled = false;
-                    submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${currentRating ? 'Update Rating' : 'Kirim Rating'}`;
+                    submitBtn.innerHTML = `<i class="fas fa-paper-plane"></i> ${currentUlasan ? 'Update Ulasan' : 'Kirim Ulasan'}`;
                     
                     // Add success animation
-                    ratingSection.classList.add('rating-success');
-                    setTimeout(() => {
-                        ratingSection.classList.remove('rating-success');
-                    }, 500);
+                    if (ulasanSection) {
+                        ulasanSection.classList.add('ulasan-success');
+                        setTimeout(() => {
+                            ulasanSection.classList.remove('ulasan-success');
+                        }, 500);
+                    }
                 });
 
                 star.addEventListener('mouseover', function() {
-                    const rating = parseInt(this.dataset.rating);
-                    updateStars(rating);
+                    const ulasan = parseInt(this.dataset.ulasan);
+                    updateStars(ulasan);
                 });
             });
 
             // Reset stars on mouse leave
-            const starRating = document.getElementById('starRating');
-            if (starRating) {
-                starRating.addEventListener('mouseleave', function() {
-                    updateStars(currentRating);
+            const starUlasan = document.getElementById('starUlasan');
+            if (starUlasan) {
+                starUlasan.addEventListener('mouseleave', function() {
+                    updateStars(currentUlasan);
                 });
             }
 
-            function updateStars(rating) {
+            function updateStars(ulasan) {
                 stars.forEach((star, index) => {
-                    if (index < rating) {
+                    if (index < ulasan) {
                         star.classList.add('active');
                     } else {
                         star.classList.remove('active');
@@ -526,10 +528,10 @@ if (isset($_SESSION['id_user'])) {
             }
 
             // Form validation with better UX
-            const ratingForm = document.getElementById('ratingForm');
-            if (ratingForm) {
-                ratingForm.addEventListener('submit', function(e) {
-                    if (!selectedRatingInput.value) {
+            const ulasanForm = document.getElementById('ulasanForm');
+            if (ulasanForm) {
+                ulasanForm.addEventListener('submit', function(e) {
+                    if (!selectedUlasanInput.value) {
                         e.preventDefault();
                         
                         // Animate stars to draw attention
@@ -545,7 +547,7 @@ if (isset($_SESSION['id_user'])) {
                         });
                         
                         // Show friendly message
-                        alert('Silakan pilih rating dengan mengklik bintang terlebih dahulu! ⭐');
+                        alert('Silakan pilih ulasan dengan mengklik bintang terlebih dahulu! ⭐');
                     } else {
                         // Loading state
                         submitBtn.innerHTML = '<i class="fas fa-spinner fa-spin"></i> Mengirim...';
@@ -555,7 +557,7 @@ if (isset($_SESSION['id_user'])) {
             }
 
             // Initialize stars display
-            updateStars(currentRating);
+            updateStars(currentUlasan);
         });
     </script>
     <script src="Homepage_script.js"></script>
